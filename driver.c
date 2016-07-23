@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:25:05 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/19 23:28:50 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/22 00:06:25 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_driver *build_cpu_driver()
 	ret->init = cpu_init;
 	ret->genimage = cpu_genimage;
 	ret->destroy = cpu_destroy;
+	return (ret);
 }
 
 t_driver *build_cuda_driver()
@@ -31,7 +32,7 @@ t_driver *build_cuda_driver()
 	return 0;
 }
 
-t_driver *get_driver(int type)
+t_driver *get_driver(t_display_type type)
 {
 	const t_driver_gen_fun drivers[] = {
 		build_cpu_driver,

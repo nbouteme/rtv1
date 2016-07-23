@@ -1,25 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   spot.h                                             :+:      :+:    :+:   */
+/*   primitive.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/07/19 23:22:42 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 02:09:42 by nbouteme         ###   ########.fr       */
+/*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
+/*   Updated: 2016/07/23 04:26:05 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef		SPOT_H
-# define	SPOT_H
+#include "primitive.h"
 
-# include "rtv1.h"
-
-typedef struct	s_spot
+t_primitive *new_primitive(t_primitive *alloc, t_vec3 pos, int diffuse)
 {
-	t_vec3 pos;
-} t_spot;
-
-t_spot *new_spot(t_spot *self, t_vec3 pos);
-
-#endif
+	(void) pos;
+	alloc->diffuse = diffuse;
+	/* TODO: creer matrice */
+	return (alloc);
+}

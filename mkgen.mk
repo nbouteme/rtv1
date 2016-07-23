@@ -6,7 +6,7 @@
 #    By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/11/23 11:08:14 by nbouteme          #+#    #+#              #
-#    Updated: 2015/12/08 12:51:41 by nbouteme         ###   ########.fr        #
+#    Updated: 2016/07/23 02:14:39 by nbouteme         ###   ########.fr        #
 #                                                                              #
 #******************************************************************************#
 
@@ -33,10 +33,12 @@ endif
 UNIQ := $(shell mktemp)
 $(shell make -s -C libft OBUILDLIBS="$(OBUILDLIBS)" > $(UNIQ))
 include $(UNIQ)
-INCDIRS += -Ilibft/includes
+SUPL += -framework OpenGL -framework AppKit
+INCDIRS += -Ilibft/includes -Iminilibx/
+PDEP += minilibx
 $(eval LIBDIRS += $(addprefix -L,$(LDEP)))
 $(eval LIBS += $(DEP))
-all: 
+all:
 	$(foreach dep,$(PDEP), $(if $(shell make -C $(dep) &> /dev/null), $(eval )))
 	@$(MAKE) -s $(NAME)
 %.o: %.c
@@ -44,8 +46,10 @@ all:
 	@$(ECHO) "\033[0;32m[✓] Built C object" $@
 $(NAME): $(OBJ)
 	@$(ECHO) "\033[0;34m--------------------------------"
-	@$(CC) -o $(NAME) $(CFLAGS) $(OBJ) $(LIBDIRS) $(addprefix -l,$(LIBS)) $(INCDIRS)
+	@$(CC) -o $(NAME) $(CFLAGS) $(OBJ) $(LIBDIRS) $(addprefix -l,$(LIBS)) $(INCDIRS) $(SUPL)
 	@$(ECHO) "\033[0;31m[✓] Linked C executable" $(NAME)
+minilibx/libmlx.a:
+	make -s -C minilibx
 clean:
 	@/bin/rm -rf $(OBJ)
 	@$(ECHO) "\033[0;33m[✓] Removed object files" $(OBJ)

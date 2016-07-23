@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:33:43 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/19 23:34:08 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/23 04:43:30 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,6 @@ typedef struct	s_sphere
 	float radius;
 }				t_sphere;
 
-t_primitive *new_sphere(float radius, t_vec3 pos);
+t_primitive *new_sphere(t_sphere *self, float radius, t_vec3 pos, int color);
 
 #endif

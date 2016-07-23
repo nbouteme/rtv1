@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:21:58 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/19 23:22:33 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/23 04:25:47 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@ typedef struct	s_primitive
 {
 	t_ray_intersect_fun intersect;
 	t_mat4 model;
+	int diffuse;
 }				t_primitive;
+
+t_primitive *new_primitive(t_primitive *alloc, t_vec3 pos, int diffuse);
 
 #endif
