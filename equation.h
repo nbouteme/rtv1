@@ -1,21 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   primitive.c                                        :+:      :+:    :+:   */
+/*   equation.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/24 04:08:46 by nbouteme         ###   ########.fr       */
+/*   Created: 2016/07/24 02:32:55 by nbouteme          #+#    #+#             */
+/*   Updated: 2016/07/24 04:11:44 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "primitive.h"
+#ifndef		EQUATION_H
+# define	EQUATION_H
 
-t_primitive *new_primitive(t_primitive *alloc, t_vec3 pos, int diffuse)
+# include "rtv1.h"
+
+typedef struct
 {
-	ft_memcpy(alloc->pos, pos, sizeof(float[3]));
-	alloc->diffuse = diffuse;
-	/* TODO: creer matrice */
-	return (alloc);
-}
+	float a;
+	float b;
+	float c;
+	float *x0;
+	float *x1;
+}		t_sec_equation;
+
+int solve_second(t_sec_equation *eq);
+
+#endif

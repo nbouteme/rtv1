@@ -6,7 +6,7 @@
 #    By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/11/23 11:08:14 by nbouteme          #+#    #+#              #
-#    Updated: 2016/07/23 02:14:39 by nbouteme         ###   ########.fr        #
+#    Updated: 2016/07/24 01:49:33 by nbouteme         ###   ########.fr        #
 #                                                                              #
 #******************************************************************************#
 
@@ -23,7 +23,7 @@ $(foreach s,$(SRC), $(eval DEPS += $(shell gcc -MM $s -Ilibft/includes |\
 OBUILDLIBS := $(DEPS)
 .SUFFIXES:
 CC = clang
-CFLAGS = -Wall -Wextra -Werror $(OPTS)
+CFLAGS = -Wall -Wextra -Werror '-DGOTO(label) asm volatile( "jmp *%0" : : "r"(&&label));' $(OPTS)
 OBJ = $(SRC:.c=.o)
 ECHO = echo
 UNAME := $(shell uname)

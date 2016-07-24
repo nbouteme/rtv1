@@ -6,25 +6,26 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 04:48:43 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/24 05:17:46 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cpu_driver.h"
+#include "int_cpu_driver.h"
 #include "display.h"
 #include "ray.h"
 #include "scene.h"
-#include <mlx.h>
+#include "vec3.h"
+#include "clear_mlx.h"
+#include <unistd.h>
 
 void cpu_init(t_driver *self)
 {
-	t_cpudri_data *data;
-
 	self->ctx = ft_memalloc(sizeof(t_cpudri_data));
-	data = self->ctx;
-	data->mlx_ptr = mlx_init();
-	data->win_ptr = mlx_new_window(data->mlx_ptr,
+	self->ctx->mlx_ptr = mlx_init();
+	self->ctx->win_ptr = mlx_new_window(self->ctx->mlx_ptr,
 								self->param.x, self->param.y, "rt");
+	self->ctx->image = mlx_new_image(self->ctx->mlx_ptr, 1280, 720);
+	self->ctx->fb = (int*)self->ctx->image->buffer;
 }
 
 int intersect_with_smth(t_ray *from, t_scene *scene, t_vec3 hit, t_primitive **out)
@@ -45,7 +46,20 @@ int intersect_with_smth(t_ray *from, t_scene *scene, t_vec3 hit, t_primitive **o
 	return (0);
 }
 
-t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir);
+t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
+{
+	const float hquantum = (1280.0f / 90.0f);
+	const float vquantum = (720.0f / 50.0f);
+	t_ray ret;
+	float xrot;
+	float yrot;
+
+	ft_memcpy(ret.pos, pos, sizeof(t_vec3));
+	xrot = ((x - 640) * hquantum) / 90.0f;
+	yrot = ((y - 360) * vquantum) / 50.0f;
+	ft_memcpy(ret.dir, rotate_dir(xrot, yrot, dir), sizeof(t_vec3));
+	return (ret);
+}
 
 t_ray gen_ray(t_vec3 from, t_vec3 to)
 {
@@ -82,9 +96,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 			{
 				t_ray shadow_ray = gen_ray(hit, scene->spots[0].pos);
 				if (!intersect_with_smth(&shadow_ray, scene, hit, &prim))
-				{
-
-				}
+					disp->renderer_driver->ctx->fb[y * 1280 + x] = 0x00FFFFFFu;
 			}
 			++x;
 		}
@@ -97,11 +109,16 @@ int internal_draw(void *param)
 	t_driver *self;
 	t_display *disp;
 	t_scene *scene;
+	extern int hitc;
 
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
 	draw_scene(disp, scene);
+	mlx_put_image_to_window(self->ctx->mlx_ptr, self->ctx->win_ptr, self->ctx->image, 0, 0);
+	mlx_do_sync(self->ctx->mlx_ptr);
+	read(0, &hitc, 1);
+	end_application();
 	return (0);
 }
 

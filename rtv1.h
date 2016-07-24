@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:21:01 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 04:49:10 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/24 04:11:16 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,11 @@ typedef enum
 	CUDA_DRIVER
 }				t_display_type;
 
-typedef float (t_vec3)[3];
+typedef float (t_vec4)[4];
 typedef float (t_mat4)[4][4];
+
+typedef float (t_vec3)[3];
+typedef float (t_mat3)[3][3];
 
 struct	s_primitive;
 typedef struct	s_primitive t_primitive;
@@ -51,6 +54,7 @@ typedef void(*t_driver_destroy)(struct s_driver *self);
 
 t_driver *get_driver(t_display_type type);
 
-float vec3_norme(t_vec3 v);
+t_vec3 *vec3_sub(t_vec3 a, t_vec3 b);
+float vec3_dot(t_vec3 a, t_vec3 b);
 
 #endif
