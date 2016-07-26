@@ -15,16 +15,15 @@
 #include "ray.h"
 #include "scene.h"
 #include "vec3.h"
-#include "clear_mlx.h"
 #include <unistd.h>
 
 void cpu_init(t_driver *self)
 {
 	self->ctx = ft_memalloc(sizeof(t_cpudri_data));
-	self->ctx->mlx_ptr = mlx_init();
-	self->ctx->win_ptr = mlx_new_window(self->ctx->mlx_ptr,
-								self->param.x, self->param.y, "rt");
-	self->ctx->image = mlx_new_image(self->ctx->mlx_ptr, 1280, 720);
+	self->ctx->mlx_ptr = xmlx_init();
+	self->ctx->win_ptr = xmlx_new_window(self->param.x, self->param.y,
+										"rt", INTEGER);
+	self->ctx->image = self->ctx->win_ptr->framebuffer;
 	self->ctx->fb = (int*)self->ctx->image->buffer;
 }
 
@@ -66,13 +65,14 @@ t_ray gen_ray(t_vec3 from, t_vec3 to)
 	float n;
 	t_ray ret;
 
-	ret.pos[0] = to[0] - from[0];
-	ret.pos[1] = to[1] - from[1];
-	ret.pos[2] = to[2] - from[2];
-	n = vec3_norme(ret.pos);
-	ret.pos[0] *= n;
-	ret.pos[1] *= n;
-	ret.pos[2] *= n;
+	ret.dir[0] = to[0] - from[0];
+	ret.dir[1] = to[1] - from[1];
+	ret.dir[2] = to[2] - from[2];
+	n = vec3_norme(ret.dir);
+	ret.dir[0] *= n;
+	ret.dir[1] *= n;
+	ret.dir[2] *= n;
+	ft_memcpy(ret.pos, from, sizeof(t_vec3));
 	return (ret);
 }
 
@@ -104,7 +104,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 	}
 }
 
-int internal_draw(void *param)
+void internal_draw(void *param)
 {
 	t_driver *self;
 	t_display *disp;
@@ -115,11 +115,9 @@ int internal_draw(void *param)
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
 	draw_scene(disp, scene);
-	mlx_put_image_to_window(self->ctx->mlx_ptr, self->ctx->win_ptr, self->ctx->image, 0, 0);
-	mlx_do_sync(self->ctx->mlx_ptr);
+	xmlx_present(self->ctx->win_ptr);
 	read(0, &hitc, 1);
 	end_application();
-	return (0);
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)
@@ -127,9 +125,7 @@ void cpu_genimage(t_driver *self, t_display *disp)
 	t_cpudri_data *data;
 
 	data = self->ctx;
-	(void)disp;
-	mlx_loop_hook(data->mlx_ptr, internal_draw, &(void *[]){self, disp});
-	mlx_loop(data->mlx_ptr);
+	xmlx_run_window(data->win_ptr, internal_draw, &(void *[]){self, disp});
 }
 
 void cpu_destroy(t_driver *self)

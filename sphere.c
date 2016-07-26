@@ -13,11 +13,12 @@
 #include "sphere.h"
 
 #include "equation.h"
+#include "vec3.h"
 #include "ray.h"
 
 int hitc = 0;
 
-bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_normal)
+bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_point)
 {
 	t_sphere *self;
 	t_vec3 l;
@@ -25,7 +26,6 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_normal)
 	float c;
 	float tmp;
 
-	(void) out_normal;
 	self = (void*)base;
 	ft_memcpy(l, vec3_sub(ray->pos, base->pos), sizeof(t_vec3));
 	b = 2 * vec3_dot(ray->dir, l);
@@ -44,6 +44,8 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_normal)
 			return (0);
 		b = c;
 	}
+	ft_memcpy(out_point, vec3_muls(ray->dir, b), sizeof(t_vec3));
+	ft_memcpy(out_point, vec3_add(ray->pos, out_point), sizeof(t_vec3));
 	hitc++;
 	return (1);
 }

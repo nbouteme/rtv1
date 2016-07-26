@@ -15,5 +15,6 @@
 
 float vec3_norme(t_vec3 v);
 t_vec3 *rotate_dir(float u, float v, t_vec3 dir);
-
+t_vec3 *vec3_muls(t_vec3 v, float s);
+t_vec3 *vec3_add(t_vec3 a, t_vec3 b);
 #endif

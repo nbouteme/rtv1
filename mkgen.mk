@@ -33,9 +33,15 @@ endif
 UNIQ := $(shell mktemp)
 $(shell make -s -C libft OBUILDLIBS="$(OBUILDLIBS)" > $(UNIQ))
 include $(UNIQ)
+
+ifeq ($(UNAME), Linux)
+SUPL += -lGL
+else
 SUPL += -framework OpenGL -framework AppKit
-INCDIRS += -Ilibft/includes -Iminilibx/
-PDEP += minilibx
+endif
+
+INCDIRS += -Ilibft/includes -Ixmlx/
+PDEP += xmlx
 $(eval LIBDIRS += $(addprefix -L,$(LDEP)))
 $(eval LIBS += $(DEP))
 all:
@@ -48,8 +54,8 @@ $(NAME): $(OBJ)
 	@$(ECHO) "\033[0;34m--------------------------------"
 	@$(CC) -o $(NAME) $(CFLAGS) $(OBJ) $(LIBDIRS) $(addprefix -l,$(LIBS)) $(INCDIRS) $(SUPL)
 	@$(ECHO) "\033[0;31m[✓] Linked C executable" $(NAME)
-minilibx/libmlx.a:
-	make -s -C minilibx
+xmlx/libxmlx.a:
+	make -s -C xmlx
 clean:
 	@/bin/rm -rf $(OBJ)
 	@$(ECHO) "\033[0;33m[✓] Removed object files" $(OBJ)

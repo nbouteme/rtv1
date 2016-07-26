@@ -13,17 +13,15 @@
 NAME = rtv1
 OPTS = -g
 
-SUPL = -lm -Lminilibx -lmlx
+SUPL = -lm -ldl -lglfw -Lxmlx -lxmlx
 
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
-SUPL += -lX11 -lXext
+SUPL += -lGL
 else
 SUPL += -framework OpenGL -framework AppKit
 endif
-
-SUPL += -lm
 
 ##################
 include mkgen.mk #

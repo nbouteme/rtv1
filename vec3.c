@@ -74,3 +74,25 @@ t_vec3 *rotate_dir(float u, float v, t_vec3 dir)
 	ft_memcpy(ndir, *mat_multv3(roty, tmp), sizeof(t_vec3));
 	return (&ndir);
 }
+
+t_vec3 *vec3_muls(t_vec3 v, float s)
+{
+	static t_vec3 ret;
+
+	ft_memcpy(ret, v, sizeof(t_vec3));
+	ret[0] *= s;
+	ret[1] *= s;
+	ret[2] *= s;
+	return (&ret);
+}
+
+t_vec3 *vec3_add(t_vec3 a, t_vec3 b)
+{
+	static t_vec3 ret;
+
+	ft_memcpy(ret, a, sizeof(t_vec3));
+	ret[0] += b[0];
+	ret[1] += b[1];
+	ret[2] += b[2];
+	return (&ret);
+}
