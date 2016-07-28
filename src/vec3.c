@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/23 04:45:22 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/24 04:26:23 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/07/28 03:45:34 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ float vec3_norme(t_vec3 v)
 {
 	float n;
 
-	n = v[0] + v[1] + v[2];
+	n = vec3_dot(v, v);
 	n = sqrtf(n);
-	return (1.0f / n);
+	return (n);
 }
 
 t_vec3 *mat_multv3(t_mat3 a, t_vec3 x)
@@ -61,15 +61,17 @@ t_vec3 *rotate_dir(float u, float v, t_vec3 dir)
 {
 	static t_vec3 ndir;
 	t_vec3 tmp;
-	static t_mat3 rotx;
-	static t_mat3 roty;
+	t_mat3 rotx;
+	t_mat3 roty;
 
 	ft_memcpy(rotx[0], (float[3]){1.0f, 0.0f, 0.0f}, sizeof(float[3]));
 	ft_memcpy(rotx[1], (float[3]){0.0f, cosf(u), -sinf(u)}, sizeof(float[3]));
 	ft_memcpy(rotx[2], (float[3]){0.0f, sinf(u), cosf(u)}, sizeof(float[3]));
-	ft_memcpy(roty[0], (float[3]){cosf(v), 0.0f, sinf(u)}, sizeof(float[3]));
-	ft_memcpy(roty[1], (float[3]){0.0f, 1.0f, 0.0f}, sizeof(float[3]));
-	ft_memcpy(roty[2], (float[3]){-sinf(v), 0.0f, cosf(u)}, sizeof(float[3]));
+
+	ft_memcpy(roty[0], (float[3]){cosf(v), -sinf(v), 0.0f}, sizeof(float[3]));
+	ft_memcpy(roty[1], (float[3]){sinf(v), cosf(v), 0.0f}, sizeof(float[3]));
+	ft_memcpy(roty[2], (float[3]){0, 0.0f, 1.0f}, sizeof(float[3]));
+
 	ft_memcpy(tmp, *mat_multv3(rotx, dir), sizeof(t_vec3));
 	ft_memcpy(ndir, *mat_multv3(roty, tmp), sizeof(t_vec3));
 	return (&ndir);
