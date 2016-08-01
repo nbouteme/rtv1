@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/23 04:45:22 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/28 03:45:34 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/01 23:10:03 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,4 +97,24 @@ t_vec3 *vec3_add(t_vec3 a, t_vec3 b)
 	ret[1] += b[1];
 	ret[2] += b[2];
 	return (&ret);
+}
+
+t_vec3 *vec3_cross(t_vec3 a, t_vec3 b)
+{
+	static t_vec3 ret;
+
+	ret[0] = a[1] * b[2] - a[2] - b[1];
+	ret[1] = a[2] * b[0] - a[0] - b[2];
+	ret[2] = a[0] * b[1] - a[1] - b[0];
+	return (&ret);
+}
+
+void vec3_normalize(t_vec3 a)
+{
+	float n;
+
+	n = vec3_norme(a);
+	a[0] /= n;
+	a[1] /= n;
+	a[2] /= n;
 }
