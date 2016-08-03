@@ -39,9 +39,15 @@ typedef struct	s_ray t_ray;
 struct	s_display;
 typedef struct	s_display t_display;
 
+typedef struct	s_hit_info
+{
+	t_vec3 point;
+	t_vec3 normal;
+}				t_hit_info;
+
 typedef bool (*t_ray_intersect_fun)(struct	s_primitive *self,
 									t_ray *ray,
-									t_vec3 hit);
+									t_hit_info *hit);
 
 typedef void (*t_keyhandle_fun)();
 typedef void (*t_mousehandle_fun)();

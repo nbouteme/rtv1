@@ -37,7 +37,7 @@ t_display *register_display(t_display *d)
 
 	if (d)
 		display = d;
-	return (d);
+	return (display);
 }
 
 void end_application()

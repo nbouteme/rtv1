@@ -16,9 +16,7 @@
 #include "vec3.h"
 #include "ray.h"
 
-int hitc = 0;
-
-bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_point)
+bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 {
 	t_sphere *self;
 	t_vec3 l;
@@ -44,9 +42,12 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_vec3 out_point)
 			return (0);
 		b = c;
 	}
-	ft_memcpy(out_point, vec3_muls(ray->dir, b), sizeof(t_vec3));
-	ft_memcpy(out_point, vec3_add(ray->pos, out_point), sizeof(t_vec3));
-	hitc++;
+	if (b <= 0.0002f)
+		return (0);
+	ft_memcpy(out->point, vec3_muls(ray->dir, b), sizeof(t_vec3));
+	ft_memcpy(out->point, vec3_add(ray->pos, out->point), sizeof(t_vec3));
+	ft_memcpy(out->normal, vec3_sub(out->point, base->pos), sizeof(t_vec3));
+	vec3_normalize(out->normal);
 	return (1);
 }
 

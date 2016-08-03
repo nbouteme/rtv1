@@ -28,7 +28,7 @@ void cpu_init(t_driver *self)
 	self->ctx->fb = (int*)self->ctx->image->buffer;
 }
 
-int intersect_with_smth(t_ray *from, t_scene *scene, t_vec3 hit, t_primitive **out)
+int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitive **out)
 {
 	int i;
 
@@ -52,7 +52,7 @@ t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 {
 	t_vec3 u, v, tmp1, tmp2, tmp3;
 	t_vec3 viewPlaneBottomLeftPoint, lap;
-
+	t_vec3 ppoint;
 	float viewPlaneHalfWidth = tan(M_PI / 8);
 	float aspectRatio = 720.0f / 1280.0f;
 	float viewPlaneHalfHeight = aspectRatio * viewPlaneHalfWidth;
@@ -68,30 +68,11 @@ t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 
 	ft_memcpy(tmp3, vec3_sub(tmp1, tmp2), sizeof(t_vec3));
 	ft_memcpy(viewPlaneBottomLeftPoint, vec3_sub(lap, tmp3), sizeof(t_vec3));
-
-	// tmp1 = v * viewPlaneHalfHeight;
-	// tmp2 = u * viewPlaneHalfWidth;
-	// tmp3 = tmp1 - tmp2;
-	// viewPlaneBottomLeftPoint = lap - tmp3;
-
 	ft_memcpy(v, vec3_muls(v, viewPlaneHalfHeight * 2.0f / 720.0f), sizeof(t_vec3));
 	ft_memcpy(u, vec3_muls(u, viewPlaneHalfWidth * 2.0f / 1280.0f), sizeof(t_vec3));
-
-	// v *= viewPlaneHalfHeight * 2.0f / 720.0f;
-	// u *= viewPlaneHalfWidth * 2.0f / 1280.0f;
-// ^ Suppose etre fait une seul fois par camera
-
-	t_vec3 ppoint;
-
-
 	ft_memcpy(tmp1, vec3_muls(u, -x), sizeof(t_vec3));
 	ft_memcpy(tmp2, vec3_muls(v, y), sizeof(t_vec3));
 	ft_memcpy(tmp3, vec3_add(tmp2, tmp1), sizeof(t_vec3));
-
-	// tmp1 = u * x;
-	// tmp2 = v * y;
-	// tmp3 = tmp2 + tmp1;
-	// ppoint = viewPlaneBottomLeftPoint + tmp3;
 	ft_memcpy(ppoint, vec3_add(viewPlaneBottomLeftPoint, tmp3), sizeof(t_vec3));
 
 	return (gen_ray(pos, ppoint));
@@ -111,7 +92,6 @@ void draw_scene(t_display *disp, t_scene *scene)
 {
 	int x;
 	int y;
-	int i;
 
 	y = 0;
 	while (y < disp->renderer_driver->param.y)
@@ -120,12 +100,18 @@ void draw_scene(t_display *disp, t_scene *scene)
 		while (x < disp->renderer_driver->param.x)
 		{
 			t_ray from_cam = gen_camray(x, y, scene->cam_pos, scene->cam_dir);
-			t_vec3 hit;
-			i = 0;
+			t_hit_info hit;
 			t_primitive *prim;
-			if (intersect_with_smth(&from_cam, scene, hit, &prim))
+			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-				disp->renderer_driver->ctx->fb[y * 1280 + x] = 0x00FFFFFFu;
+				t_ray shadow_ray = gen_ray(*(t_vec3*)vec3_add(hit.point,
+													*(t_vec3*)vec3_muls(hit.normal,
+															  0.001f)),
+										scene->spots[0].pos);
+				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
+					disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
+				else
+					disp->renderer_driver->ctx->fb[y * 1280 + x] = 0x303030;
 			}
 			++x;
 		}
@@ -138,7 +124,6 @@ void internal_draw(void *param)
 	t_driver *self;
 	t_display *disp;
 	t_scene *scene;
-	extern int hitc;
 
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
