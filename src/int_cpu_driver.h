@@ -26,7 +26,7 @@ typedef struct	s_cpudri_data
 	t_mlx_ctx *mlx_ptr;
 	t_xmlx_window *win_ptr;
 	t_image *image;
-	int *fb;
+	t_vec3 *fb;
 }				t_cpudri_data;
 
 typedef struct	s_driver

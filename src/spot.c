@@ -14,6 +14,6 @@
 
 t_spot *new_spot(t_spot *self, t_vec3 pos)
 {
-	ft_memcpy(&self->pos, pos, sizeof(t_vec3));
+	self->pos = pos;
 	return (self);
 }

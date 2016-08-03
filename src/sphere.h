@@ -23,6 +23,6 @@ typedef struct	s_sphere
 	float radius2;
 }				t_sphere;
 
-t_primitive *new_sphere(t_sphere *self, float radius, t_vec3 pos, int color);
+t_primitive *new_sphere(t_sphere *self, float radius, t_vec3 pos, t_vec3 color);
 
 #endif

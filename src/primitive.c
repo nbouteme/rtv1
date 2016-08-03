@@ -11,10 +11,36 @@
 /* ************************************************************************** */
 
 #include "primitive.h"
+#include "mat4.h"
+#include "ray.h"
 
-t_primitive *new_primitive(t_primitive *alloc, t_vec3 pos, int diffuse)
+t_ray transform_ray(t_mat4 transf, t_ray *in)
 {
-	ft_memcpy(alloc->pos, pos, sizeof(float[3]));
+	t_ray ret;
+
+	ret.pos = mat4_transform3(transf, in->pos);
+	ret.dir = mat4_transform3(transf, in->dir);
+	return ret;
+}
+
+int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
+{
+	int res;
+	t_ray from2;
+
+	from2 = transform_ray(self->itransform, from);
+	if ((res = self->intersect(self, &from2, info)))
+	{
+		mat4_transform3(self->transform, info->point);
+		mat4_transform3(self->transform, info->normal);
+	}
+	return (res);
+}
+
+t_primitive *new_primitive(t_primitive *alloc, t_mat4 transform, t_vec3 diffuse)
+{
+	alloc->transform = transform;
+	alloc->itransform = mat4_inverse(transform);
 	alloc->diffuse = diffuse;
 	/* TODO: creer matrice */
 	return (alloc);

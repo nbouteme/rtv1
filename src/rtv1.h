@@ -24,11 +24,78 @@ typedef enum
 	CUDA_DRIVER
 }				t_display_type;
 
-typedef float (t_vec4)[4];
-typedef float (t_mat4)[4][4];
+typedef struct	s_4dvec
+{
+	float x;
+	float y;
+	float z;
+	float w;
+}				t_4dvec;
 
-typedef float (t_vec3)[3];
-typedef float (t_mat3)[3][3];
+typedef struct	s_3dvec
+{
+	float x;
+	float y;
+	float z;
+}				t_3dvec;
+
+
+struct	s_3dmat_named
+{
+	struct	s_3dvec a;
+	struct	s_3dvec b;
+	struct	s_3dvec c;
+};
+
+struct	s_3dmat
+{
+	union
+	{
+		struct	s_3dmat_named n;
+		struct	s_3dvec v[3];
+	};
+};
+
+struct	s_4dmat_named
+{
+	struct	s_4dvec a;
+	struct	s_4dvec b;
+	struct	s_4dvec c;
+	struct	s_4dvec d;
+};
+
+struct	s_4dmat
+{
+	union
+	{
+		struct	s_4dmat_named n;
+		struct	s_4dvec v[4];
+	};
+};
+
+typedef union __attribute__ ((__transparent_union__))
+{
+	struct s_3dvec s;
+	float v[3];
+}				t_vec3;
+
+typedef union __attribute__ ((__transparent_union__))
+{
+	struct s_4dvec s;
+	float v[4];
+}				t_vec4;
+
+typedef union
+{
+	struct s_3dmat s;
+	float v[3][3];
+}				t_mat3;
+
+typedef union
+{
+	struct s_4dmat s;
+	float v[4][4];
+}				t_mat4;
 
 struct	s_primitive;
 typedef struct	s_primitive t_primitive;
@@ -59,8 +126,5 @@ typedef void(*t_driver_genimage)(struct s_driver *self, t_display *disp);
 typedef void(*t_driver_destroy)(struct s_driver *self);
 
 t_driver *get_driver(t_display_type type);
-
-t_vec3 *vec3_sub(t_vec3 a, t_vec3 b);
-float vec3_dot(t_vec3 a, t_vec3 b);
 
 #endif

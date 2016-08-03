@@ -23,9 +23,9 @@ void cpu_init(t_driver *self)
 	self->ctx = ft_memalloc(sizeof(t_cpudri_data));
 	self->ctx->mlx_ptr = xmlx_init();
 	self->ctx->win_ptr = xmlx_new_window(self->param.x, self->param.y,
-										"rt", INTEGER);
+										"rt", FLOAT);
 	self->ctx->image = self->ctx->win_ptr->framebuffer;
-	self->ctx->fb = (int*)self->ctx->image->buffer;
+	self->ctx->fb = (t_vec3*)self->ctx->image->buffer;
 }
 
 int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitive **out)
@@ -35,10 +35,9 @@ int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitiv
 	i = 0;
 	while (i < scene->n_primitives)
 	{
-		if (scene->primitives[i].intersect(&scene->primitives[i],
-										   from, hit))
+		if (intersect(scene->primitives[i], from, hit))
 		{
-			*out = &scene->primitives[i];
+			*out = scene->primitives[i];
 			return (1);
 		}
 		++i;
@@ -57,23 +56,23 @@ t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 	float aspectRatio = 720.0f / 1280.0f;
 	float viewPlaneHalfHeight = aspectRatio * viewPlaneHalfWidth;
 
-	ft_memcpy(lap, vec3_add(pos, dir), sizeof(t_vec3));
-	ft_memcpy(u, vec3_cross(dir, (float[]){0.0f, 1.0f, 0.0f}), sizeof(t_vec3));
-	ft_memcpy(v, vec3_cross(u, dir), sizeof(t_vec3));
+	lap = vec3_add(pos, dir);
+	u = vec3_cross(dir, (t_3dvec){0.0f, 1.0f, 0.0f});
+	v = vec3_cross(u, dir);
 	vec3_normalize(u);
 	vec3_normalize(v);
 
-	ft_memcpy(tmp1, vec3_muls(v, viewPlaneHalfHeight), sizeof(t_vec3));
-	ft_memcpy(tmp2, vec3_muls(u, viewPlaneHalfWidth), sizeof(t_vec3));
+	tmp1 = vec3_muls(v, viewPlaneHalfHeight);
+	tmp2 = vec3_muls(u, viewPlaneHalfWidth);
 
-	ft_memcpy(tmp3, vec3_sub(tmp1, tmp2), sizeof(t_vec3));
-	ft_memcpy(viewPlaneBottomLeftPoint, vec3_sub(lap, tmp3), sizeof(t_vec3));
-	ft_memcpy(v, vec3_muls(v, viewPlaneHalfHeight * 2.0f / 720.0f), sizeof(t_vec3));
-	ft_memcpy(u, vec3_muls(u, viewPlaneHalfWidth * 2.0f / 1280.0f), sizeof(t_vec3));
-	ft_memcpy(tmp1, vec3_muls(u, -x), sizeof(t_vec3));
-	ft_memcpy(tmp2, vec3_muls(v, y), sizeof(t_vec3));
-	ft_memcpy(tmp3, vec3_add(tmp2, tmp1), sizeof(t_vec3));
-	ft_memcpy(ppoint, vec3_add(viewPlaneBottomLeftPoint, tmp3), sizeof(t_vec3));
+	tmp3 = vec3_sub(tmp1, tmp2);
+	viewPlaneBottomLeftPoint = vec3_sub(lap, tmp3);
+	v = vec3_muls(v, viewPlaneHalfHeight * 2.0f / 720.0f);
+	u = vec3_muls(u, viewPlaneHalfWidth * 2.0f / 1280.0f);
+	tmp1 = vec3_muls(u, -x);
+	tmp2 = vec3_muls(v, y);
+	tmp3 = vec3_add(tmp2, tmp1);
+	ppoint = vec3_add(viewPlaneBottomLeftPoint, tmp3);
 
 	return (gen_ray(pos, ppoint));
 }
@@ -82,9 +81,9 @@ t_ray gen_ray(t_vec3 from, t_vec3 to)
 {
 	t_ray ret;
 
-	ft_memcpy(ret.dir, vec3_sub(to, from), sizeof(t_vec3));
+	ret.dir = vec3_sub(to, from);
 	vec3_normalize(ret.dir);
-	ft_memcpy(ret.pos, from, sizeof(t_vec3));
+	ret.pos = from;
 	return (ret);
 }
 
@@ -104,14 +103,15 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_primitive *prim;
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-				t_ray shadow_ray = gen_ray(*(t_vec3*)vec3_add(hit.point,
-													*(t_vec3*)vec3_muls(hit.normal,
-															  0.001f)),
-										scene->spots[0].pos);
+				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.00002f)), scene->spots[0].pos);
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
-					disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
-				else
-					disp->renderer_driver->ctx->fb[y * 1280 + x] = 0x303030;
+				{
+					t_vec3 diff;
+					float coef = vec3_dot(hit.normal, shadow_ray.dir);
+					coef = coef < 0 ? 0 : coef;
+					diff = vec3_muls(prim->diffuse, coef);
+					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
+				}
 			}
 			++x;
 		}
@@ -127,7 +127,6 @@ void internal_draw(void *param)
 
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
-	disp->renderer_driver->ctx->fb[0] = 0x00FFFFFFu;
 	scene = disp->user_ptr;
 	draw_scene(disp, scene);
 	xmlx_present(self->ctx->win_ptr);

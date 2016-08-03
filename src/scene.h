@@ -23,7 +23,7 @@ typedef struct	s_scene
 	t_vec3 cam_dir;
 	int n_primitives;
 	int n_spots;
-	t_primitive *primitives;
+	t_primitive **primitives;
 	t_spot *spots;
 }				t_scene;
 

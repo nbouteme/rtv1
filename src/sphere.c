@@ -14,6 +14,7 @@
 
 #include "equation.h"
 #include "vec3.h"
+#include "mat4.h"
 #include "ray.h"
 
 bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
@@ -25,7 +26,7 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	float tmp;
 
 	self = (void*)base;
-	ft_memcpy(l, vec3_sub(ray->pos, base->pos), sizeof(t_vec3));
+	l = ray->pos;
 	b = 2 * vec3_dot(ray->dir, l);
 	c = vec3_dot(l, l) - self->radius2;
 	if (!solve_second(&(t_sec_equation){vec3_dot(ray->dir, ray->dir), b, c, &b, &c}))
@@ -44,16 +45,15 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	}
 	if (b <= 0.0002f)
 		return (0);
-	ft_memcpy(out->point, vec3_muls(ray->dir, b), sizeof(t_vec3));
-	ft_memcpy(out->point, vec3_add(ray->pos, out->point), sizeof(t_vec3));
-	ft_memcpy(out->normal, vec3_sub(out->point, base->pos), sizeof(t_vec3));
+	out->point = vec3_add(ray->pos, vec3_muls(ray->dir, b));
+	out->normal = out->point;
 	vec3_normalize(out->normal);
 	return (1);
 }
 
-t_primitive *new_sphere(t_sphere *ret, float radius, t_vec3 pos, int color)
+t_primitive *new_sphere(t_sphere *ret, float radius, t_vec3 pos, t_vec3 color)
 {
-	new_primitive(&ret->base, pos, color);
+	new_primitive(&ret->base, mat4_translate(pos), color);
 	ret->base.intersect = sphere_ray_intersect;
 	ret->radius = radius;
 	ret->radius2 = radius * radius;

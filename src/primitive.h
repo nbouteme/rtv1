@@ -18,10 +18,12 @@
 typedef struct	s_primitive
 {
 	t_ray_intersect_fun intersect;
-	t_vec3 pos;
-	int diffuse;
+	t_mat4 transform;
+	t_mat4 itransform;
+	t_vec3 diffuse;
 }				t_primitive;
 
-t_primitive *new_primitive(t_primitive *alloc, t_vec3 pos, int diffuse);
+t_primitive *new_primitive(t_primitive *alloc, t_mat4 trans, t_vec3 diffuse);
+int intersect(t_primitive *self, t_ray *from, t_hit_info *info);
 
 #endif

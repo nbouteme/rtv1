@@ -19,10 +19,4 @@ void cpu_init(t_driver *self);
 void cpu_genimage(t_driver *self, t_display *disp);
 void cpu_destroy(t_driver *self);
 
-typedef struct	s_cpudri_data
-{
-	void *mlx_ptr;
-	void *win_ptr;
-}				t_cpudri_data;
-
 #endif
