@@ -29,8 +29,8 @@ t_scene *load_scene(const char *fn)
 									(t_3dvec){0.5f, 0.5f, 0.5f});
 	ret->primitives[1] = new_sphere(malloc(sizeof(t_sphere)), 1.0f,
 									(t_3dvec){ 5.0f, 0.0f, 20.0f },
-									(t_3dvec){0.5f, 0.5f, 0.5f});
+									(t_3dvec){0.5f, 1.0f, 0.5f});
 	ret->spots = new_spot(malloc(sizeof(*ret->spots)),
-						(t_3dvec){ 10.0f, 10.0f, 0.0f });
+						(t_3dvec){ -2.5f, 0.0f, 20.0f });
 	return (ret);
 }

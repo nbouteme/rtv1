@@ -90,12 +90,12 @@ t_vec3 vec3_cross(t_vec3 a, t_vec3 b)
 	return (ret);
 }
 
-void vec3_normalize(t_vec3 a)
+void vec3_normalize(t_vec3 *a)
 {
 	float n;
 
-	n = vec3_norme(a);
-	a.v[0] /= n;
-	a.v[1] /= n;
-	a.v[2] /= n;
+	n = vec3_norme(*a);
+	a->v[0] /= n;
+	a->v[1] /= n;
+	a->v[2] /= n;
 }

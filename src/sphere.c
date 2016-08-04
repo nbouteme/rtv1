@@ -47,7 +47,7 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 		return (0);
 	out->point = vec3_add(ray->pos, vec3_muls(ray->dir, b));
 	out->normal = out->point;
-	vec3_normalize(out->normal);
+	vec3_normalize(&out->normal);
 	return (1);
 }
 

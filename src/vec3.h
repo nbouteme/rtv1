@@ -19,7 +19,7 @@ t_vec3 vec3_muls(t_vec3 v, float s);
 t_vec3 vec3_add(t_vec3 a, t_vec3 b);
 t_vec3 vec3_sub(t_vec3 a, t_vec3 b);
 t_vec3 vec3_cross(t_vec3 a, t_vec3 b);
-void vec3_normalize(t_vec3 a);
+void vec3_normalize(t_vec3 *a);
 float vec3_dot(t_vec3 a, t_vec3 b);
 
 #endif

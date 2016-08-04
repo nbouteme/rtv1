@@ -20,6 +20,8 @@ typedef struct	s_primitive
 	t_ray_intersect_fun intersect;
 	t_mat4 transform;
 	t_mat4 itransform;
+	t_mat3 norm;
+	t_mat3 inorm;
 	t_vec3 diffuse;
 }				t_primitive;
 

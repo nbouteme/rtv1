@@ -15,6 +15,7 @@
 #include "ray.h"
 #include "scene.h"
 #include "vec3.h"
+#include "mat4.h"
 #include <stdio.h>
 #include <unistd.h>
 
@@ -59,8 +60,8 @@ t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 	lap = vec3_add(pos, dir);
 	u = vec3_cross(dir, (t_3dvec){0.0f, 1.0f, 0.0f});
 	v = vec3_cross(u, dir);
-	vec3_normalize(u);
-	vec3_normalize(v);
+	vec3_normalize(&u);
+	vec3_normalize(&v);
 
 	tmp1 = vec3_muls(v, viewPlaneHalfHeight);
 	tmp2 = vec3_muls(u, viewPlaneHalfWidth);
@@ -82,7 +83,7 @@ t_ray gen_ray(t_vec3 from, t_vec3 to)
 	t_ray ret;
 
 	ret.dir = vec3_sub(to, from);
-	vec3_normalize(ret.dir);
+	vec3_normalize(&ret.dir);
 	ret.pos = from;
 	return (ret);
 }
@@ -103,7 +104,9 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_primitive *prim;
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.00002f)), scene->spots[0].pos);
+				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
+																		 0.00002f)),
+										   mat4_transform3(prim->itransform, scene->spots[0].pos));
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
 				{
 					t_vec3 diff;
@@ -128,8 +131,12 @@ void internal_draw(void *param)
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
-	draw_scene(disp, scene);
-	xmlx_present(self->ctx->win_ptr);
+	while(1)
+	{
+		draw_scene(disp, scene);
+		xmlx_present(self->ctx->win_ptr);
+		scene->spots[0].pos.v[0]++;
+	}
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)
