@@ -104,7 +104,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_primitive *prim;
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
+/*				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
 																		 0.00002f)),
 										   mat4_transform3(prim->itransform, scene->spots[0].pos));
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
@@ -114,7 +114,9 @@ void draw_scene(t_display *disp, t_scene *scene)
 					coef = coef < 0 ? 0 : coef;
 					diff = vec3_muls(prim->diffuse, coef);
 					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
-				}
+					}*/
+				disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
+
 			}
 			++x;
 		}
@@ -131,12 +133,8 @@ void internal_draw(void *param)
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
-	while(1)
-	{
-		draw_scene(disp, scene);
-		xmlx_present(self->ctx->win_ptr);
-		scene->spots[0].pos.v[0]++;
-	}
+	draw_scene(disp, scene);
+	xmlx_present(self->ctx->win_ptr);
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)

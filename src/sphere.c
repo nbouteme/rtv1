@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "sphere.h"
-
 #include "equation.h"
 #include "vec3.h"
 #include "mat4.h"

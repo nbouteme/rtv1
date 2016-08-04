@@ -80,6 +80,25 @@ t_vec3 vec3_add(t_vec3 a, t_vec3 b)
 	return (ret);
 }
 
+t_vec3 vec3_div(t_vec3 a, t_vec3 b)
+{
+	t_vec3 ret;
+
+	ret.s = a.s;
+	ret.v[0] /= b.v[0];
+	ret.v[1] /= b.v[1];
+	ret.v[2] /= b.v[2];
+	return (ret);
+}
+
+t_vec3 vec3_null()
+{
+	t_vec3 ret;
+
+	ft_memset(&ret.s, 0, sizeof(ret.s));
+	return (ret);
+}
+
 t_vec3 vec3_cross(t_vec3 a, t_vec3 b)
 {
 	t_vec3 ret;
