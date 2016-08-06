@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/05 01:05:21 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/05 01:12:48 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/06 00:42:04 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,6 @@ typedef struct	s_plane
 {
 	t_primitive base;
 }				t_plane;
+t_primitive *new_plane(t_plane *plane, t_mat4 trans, t_vec3 color);
 
 #endif

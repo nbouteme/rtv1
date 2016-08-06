@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/05 00:41:34 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/06 03:46:55 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "scene.h"
 #include "vec3.h"
 #include "mat4.h"
+#include "plane.h"
 #include <stdio.h>
 #include <unistd.h>
 
@@ -118,6 +119,9 @@ void draw_scene(t_display *disp, t_scene *scene)
 				disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
 
 			}
+			else
+				disp->renderer_driver->ctx->fb[y * 1280 + x].s = (t_3dvec){0, 0, 0};
+
 			++x;
 		}
 		++y;
@@ -130,11 +134,18 @@ void internal_draw(void *param)
 	t_display *disp;
 	t_scene *scene;
 
+	const float tran = 180.0f / M_PI;
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
+	static float angle = M_PI / 4;
+	printf("%.3fdeg\n", angle * tran);
 	draw_scene(disp, scene);
 	xmlx_present(self->ctx->win_ptr);
+	free(scene->primitives[0]);
+	scene->primitives[0] = new_plane(malloc(sizeof(t_plane)),
+										 mat4_rotation((t_3dvec){0.0f, 1.0f, 0.0f}, angle += 0.5),
+									 (t_3dvec){0.5f, 0.5f, 0.5f});
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)
