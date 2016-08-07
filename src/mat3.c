@@ -18,13 +18,11 @@ t_mat3 mat3_ident()
 {
 	t_mat3 ret;
 	unsigned i;
-	unsigned j;
 
 	ft_memset(&ret, 0, sizeof(ret));
 	i = ~0;
-	while (++i < 3 && (j = ~0))
-		while (++j < 3)
-			ret.v[i][j] = 1.0f;
+	while (++i < 3)
+			ret.v[i][i] = 1.0f;
 	return (ret);
 }
 

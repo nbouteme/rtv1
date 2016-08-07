@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:30 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/06 00:55:41 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 00:59:26 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,10 @@ t_scene *load_scene(const char *fn)
 									(t_3dvec){ 0, 0, 20.0f },
 									(t_3dvec){0.5f, 0.5f, 0.5f});
 	ret->primitives[0] = new_plane(malloc(sizeof(t_plane)),
-								   mat4_mult(mat4_translate((t_3dvec){ 0, 0, 20.0f }),
-											 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, M_PI / 4)),
+								   mat4_mult(
+										 mat4_translate((t_3dvec){ 0, 0, 20.0f }),
+										 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, 0)
+									   ),
 								(t_3dvec){0.5f, 0.5f, 0.5f});
 	ret->spots = new_spot(malloc(sizeof(*ret->spots)),
 						(t_3dvec){ -2.5f, -10.0f, 20.0f });

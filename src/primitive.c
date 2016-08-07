@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/24 04:08:46 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 00:45:57 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
 	from2 = transform_ray(self->itransform, self->inorm, from);
 	if ((res = self->intersect(self, &from2, info)))
 	{
-		mat4_transform3(self->transform, info->point);
-		mat4_transform3(self->transform, info->normal);
+		info->point = mat4_transform3(self->transform, info->point);
+		info->normal = mat4_transform3(self->transform, info->normal);
 	}
 	return (res);
 }

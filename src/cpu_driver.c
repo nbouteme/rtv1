@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/06 03:46:55 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 01:02:45 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,12 +139,16 @@ void internal_draw(void *param)
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
 	static float angle = M_PI / 4;
+	(void)angle;
 	printf("%.3fdeg\n", angle * tran);
 	draw_scene(disp, scene);
 	xmlx_present(self->ctx->win_ptr);
 	free(scene->primitives[0]);
 	scene->primitives[0] = new_plane(malloc(sizeof(t_plane)),
-										 mat4_rotation((t_3dvec){0.0f, 1.0f, 0.0f}, angle += 0.5),
+									 mat4_mult(
+										 mat4_translate((t_3dvec){ 0, 0, 20.0f }),
+										 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, angle += 0.5f)
+										 ),
 									 (t_3dvec){0.5f, 0.5f, 0.5f});
 }
 

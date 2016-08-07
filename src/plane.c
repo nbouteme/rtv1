@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/05 01:05:12 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/06 05:02:12 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 01:02:29 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 bool plane_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 {
 	(void)base;
-	out->normal.s = (t_3dvec){0.0f, 0.0f, -1.0f};
+	out->normal.s = (t_3dvec){0.0f, 0.0f, 1.0f};
 	float demon = 1.0f / vec3_dot(out->normal, ray->dir);
 	if (demon < 0)
 		return false;
