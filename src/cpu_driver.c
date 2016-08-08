@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/08 01:02:45 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 04:41:40 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,50 +33,47 @@ void cpu_init(t_driver *self)
 int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitive **out)
 {
 	int i;
+	float mindist;
+	t_hit_info back;
 
+	mindist = 10000000.0f;
 	i = 0;
 	while (i < scene->n_primitives)
 	{
+		back = *hit;
 		if (intersect(scene->primitives[i], from, hit))
 		{
-			*out = scene->primitives[i];
-			return (1);
+			if (mindist > hit->dist)
+			{
+				mindist = hit->dist;
+				*out = scene->primitives[i];
+			}
+			else
+				*hit = back;
 		}
 		++i;
 	}
-	return (0);
+	return (mindist != 10000000.0f);
 }
 
 t_ray gen_ray(t_vec3 from, t_vec3 to);
 
 t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 {
-	t_vec3 u, v, tmp1, tmp2, tmp3;
-	t_vec3 viewPlaneBottomLeftPoint, lap;
-	t_vec3 ppoint;
+	t_vec3 u, v;
+	t_vec3 viewPlaneBottomLeftPoint;
 	float viewPlaneHalfWidth = tan(M_PI / 8);
-	float aspectRatio = 720.0f / 1280.0f;
-	float viewPlaneHalfHeight = aspectRatio * viewPlaneHalfWidth;
+	float viewPlaneHalfHeight = (720.0f / 1280.0f) * viewPlaneHalfWidth;
 
-	lap = vec3_add(pos, dir);
+	dir = vec3_add(pos, dir);
 	u = vec3_cross(dir, (t_3dvec){0.0f, 1.0f, 0.0f});
 	v = vec3_cross(u, dir);
 	vec3_normalize(&u);
 	vec3_normalize(&v);
-
-	tmp1 = vec3_muls(v, viewPlaneHalfHeight);
-	tmp2 = vec3_muls(u, viewPlaneHalfWidth);
-
-	tmp3 = vec3_sub(tmp1, tmp2);
-	viewPlaneBottomLeftPoint = vec3_sub(lap, tmp3);
+	viewPlaneBottomLeftPoint = vec3_sub(dir, vec3_sub(vec3_muls(v, viewPlaneHalfHeight), vec3_muls(u, viewPlaneHalfWidth)));
 	v = vec3_muls(v, viewPlaneHalfHeight * 2.0f / 720.0f);
 	u = vec3_muls(u, viewPlaneHalfWidth * 2.0f / 1280.0f);
-	tmp1 = vec3_muls(u, -x);
-	tmp2 = vec3_muls(v, y);
-	tmp3 = vec3_add(tmp2, tmp1);
-	ppoint = vec3_add(viewPlaneBottomLeftPoint, tmp3);
-
-	return (gen_ray(pos, ppoint));
+	return (gen_ray(pos, vec3_add(viewPlaneBottomLeftPoint, vec3_add(vec3_muls(v, y), vec3_muls(u, -x)))));
 }
 
 t_ray gen_ray(t_vec3 from, t_vec3 to)
@@ -105,23 +102,18 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_primitive *prim;
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-/*				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
+				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
 																		 0.00002f)),
 										   mat4_transform3(prim->itransform, scene->spots[0].pos));
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
 				{
 					t_vec3 diff;
 					float coef = vec3_dot(hit.normal, shadow_ray.dir);
-					coef = coef < 0 ? 0 : coef;
+					coef = coef < 0 ? -coef : coef;
 					diff = vec3_muls(prim->diffuse, coef);
 					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
-					}*/
-				disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
-
+				}
 			}
-			else
-				disp->renderer_driver->ctx->fb[y * 1280 + x].s = (t_3dvec){0, 0, 0};
-
 			++x;
 		}
 		++y;
@@ -134,22 +126,11 @@ void internal_draw(void *param)
 	t_display *disp;
 	t_scene *scene;
 
-	const float tran = 180.0f / M_PI;
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
-	static float angle = M_PI / 4;
-	(void)angle;
-	printf("%.3fdeg\n", angle * tran);
 	draw_scene(disp, scene);
 	xmlx_present(self->ctx->win_ptr);
-	free(scene->primitives[0]);
-	scene->primitives[0] = new_plane(malloc(sizeof(t_plane)),
-									 mat4_mult(
-										 mat4_translate((t_3dvec){ 0, 0, 20.0f }),
-										 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, angle += 0.5f)
-										 ),
-									 (t_3dvec){0.5f, 0.5f, 0.5f});
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)

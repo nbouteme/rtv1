@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:21:01 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/05 00:03:17 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 03:46:11 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,7 @@ typedef struct	s_hit_info
 {
 	t_vec3 point;
 	t_vec3 normal;
+	float dist;
 }				t_hit_info;
 
 typedef bool (*t_ray_intersect_fun)(struct	s_primitive *self,

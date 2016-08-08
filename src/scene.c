@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:30 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/08 00:59:26 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 04:24:32 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,20 +24,20 @@ t_scene *load_scene(const char *fn)
 
 	(void)fn;
 	ret = ft_memalloc(sizeof(*ret));
-	ret->n_primitives = 1;
+	ret->n_primitives = 2;
 	ret->n_spots = 1;
 	ret->cam_dir.s = (t_3dvec){0.0f, 0.0f, 1.0f};
 	ret->primitives = malloc(sizeof(t_primitive*) * 2);
-	ret->primitives[1] = new_sphere(malloc(sizeof(t_sphere)), 1.0f,
+	ret->primitives[0] = new_sphere(malloc(sizeof(t_sphere)), 1.0f,
 									(t_3dvec){ 0, 0, 20.0f },
 									(t_3dvec){0.5f, 0.5f, 0.5f});
-	ret->primitives[0] = new_plane(malloc(sizeof(t_plane)),
+	ret->primitives[1] = new_plane(malloc(sizeof(t_plane)),
 								   mat4_mult(
-										 mat4_translate((t_3dvec){ 0, 0, 20.0f }),
+										 mat4_translate((t_3dvec){ 0, 0, 25.0f }),
 										 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, 0)
 									   ),
-								(t_3dvec){0.5f, 0.5f, 0.5f});
+								(t_3dvec){0.0f, 0.5f, 0.5f});
 	ret->spots = new_spot(malloc(sizeof(*ret->spots)),
-						(t_3dvec){ -2.5f, -10.0f, 20.0f });
+						(t_3dvec){ -2.5f, -10.0f, 0.0f });
 	return (ret);
 }

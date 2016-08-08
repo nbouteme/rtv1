@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:46:31 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/28 02:42:19 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/08 03:49:12 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,10 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 			return (0);
 		b = c;
 	}
-	if (b <= 0.0002f)
-		return (0);
 	out->point = vec3_add(ray->pos, vec3_muls(ray->dir, b));
 	out->normal = out->point;
 	vec3_normalize(&out->normal);
+	out->dist = b;
 	return (1);
 }
 
