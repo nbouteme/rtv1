@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/08 04:04:46 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/11 03:56:56 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,17 @@ t_ray transform_ray(t_mat4 transf, t_mat3 norm, t_ray *in)
 int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
 {
 	t_ray from2;
+	int res;
 
 	from2 = transform_ray(self->itransform, self->inorm, from);
-	return (self->intersect(self, &from2, info));
-}
-
-/*
- 	{
-		mat4_transform3(self->transform, info->point);
-		mat4_transform3(self->transform, info->normal);
+	res = self->intersect(self, &from2, info);
+	if (res)
+	{
+		info->point = mat4_transform3(self->transform, info->point);
+		info->normal = mat3_transform3(self->inorm, info->normal);
 	}
-*/
+	return (res);
+}
 
 t_primitive *new_primitive(t_primitive *alloc, t_mat4 transform, t_vec3 diffuse)
 {

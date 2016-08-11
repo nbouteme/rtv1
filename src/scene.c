@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:30 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/08 04:24:32 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/11 04:10:40 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,15 @@
 #include "spot.h"
 #include "mat4.h"
 #include "mat3.h"
+
+float deg2rad(float deg)
+{
+	const float tran = 180.0f / M_PI;
+
+	return deg / tran;
+}
+
+extern float angle;
 
 t_scene *load_scene(const char *fn)
 {
@@ -32,12 +41,12 @@ t_scene *load_scene(const char *fn)
 									(t_3dvec){ 0, 0, 20.0f },
 									(t_3dvec){0.5f, 0.5f, 0.5f});
 	ret->primitives[1] = new_plane(malloc(sizeof(t_plane)),
-								   mat4_mult(
-										 mat4_translate((t_3dvec){ 0, 0, 25.0f }),
-										 mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, 0)
-									   ),
-								(t_3dvec){0.0f, 0.5f, 0.5f});
+								mat4_mult(
+									mat4_translate((t_3dvec){0.0f, 0.0f, 30.0f }),
+									mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, deg2rad(angle))
+									),
+								   (t_3dvec){0.0f, 0.5f, 0.5f});
 	ret->spots = new_spot(malloc(sizeof(*ret->spots)),
-						(t_3dvec){ -2.5f, -10.0f, 0.0f });
+						  (t_3dvec){ -5.0f, -5.0f, -5.0f });
 	return (ret);
 }

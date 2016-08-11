@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/08 04:41:40 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/11 04:06:04 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitiv
 	float mindist;
 	t_hit_info back;
 
-	mindist = 10000000.0f;
+	mindist = 500.0f;
 	i = 0;
 	while (i < scene->n_primitives)
 	{
@@ -53,7 +53,7 @@ int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitiv
 		}
 		++i;
 	}
-	return (mindist != 10000000.0f);
+	return (mindist != 500.0f);
 }
 
 t_ray gen_ray(t_vec3 from, t_vec3 to);
@@ -103,13 +103,13 @@ void draw_scene(t_display *disp, t_scene *scene)
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
 				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
-																		 0.00002f)),
-										   mat4_transform3(prim->itransform, scene->spots[0].pos));
+																		 0.01f)),
+										   scene->spots[0].pos);
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
 				{
 					t_vec3 diff;
 					float coef = vec3_dot(hit.normal, shadow_ray.dir);
-					coef = coef < 0 ? -coef : coef;
+					coef = coef < 0 ? 0.0 : coef;
 					diff = vec3_muls(prim->diffuse, coef);
 					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
 				}
@@ -120,8 +120,13 @@ void draw_scene(t_display *disp, t_scene *scene)
 	}
 }
 
+float deg2rad(float deg);
+
+extern float angle;
+
 void internal_draw(void *param)
 {
+	static int done = 0;
 	t_driver *self;
 	t_display *disp;
 	t_scene *scene;
@@ -129,7 +134,10 @@ void internal_draw(void *param)
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = disp->user_ptr;
-	draw_scene(disp, scene);
+	if (!done)
+	{
+		draw_scene(disp, scene);
+	}
 	xmlx_present(self->ctx->win_ptr);
 }
 

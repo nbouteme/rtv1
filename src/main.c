@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 22:10:35 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 04:06:55 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/09 02:17:31 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void usage()
 	ft_putstr("Usage: ./rtv1 [scene file]");
 	exit(1);
 }
-
+float angle;
 int main(int argc, char **argv)
 {
 	t_scene *scene;
@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 
 	if (argc != 2)
 		usage();
+	angle = atof(argv[1]);
 	scene = load_scene(argv[1]);
 	display = new_display((t_display_init_param)
 						{
