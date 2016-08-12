@@ -22,8 +22,8 @@ define greenout
 $(shell printf "\033[0;32m%s\033[0m" "$(strip $1)")
 endef
 
-src_from_modules = $(shell find $1 -type f | grep -v '/\.' | grep '.c$$')
-nsrc_from_modules = $(shell find $1 -type f | grep -v '/\.' | grep '.c$$' | wc -l)
+src_from_modules = $(shell find $1 -maxdepth 1 -type f | grep -v '/\.' | grep '.c$$')
+nsrc_from_modules = $(shell find $1 -maxdepth 1 -type f | grep -v '/\.' | grep '.c$$' | wc -l)
 file_exist = $(shell test -e $1 && echo "exist")
 eq = $(and $(findstring $(1),$(2)),$(findstring $(2),$(1)))
 get_val_in_file =	$(if $(call file_exist,$1),\
@@ -69,7 +69,8 @@ CUR_OPTS := $(OPTS)
 CUR_TYPE := $(TYPE)
 CUR_DEPS := $(DEPS)
 CUR_OUTPUT := $(OUTPUT)
-CUR_MODULES := $(MODULES)
+
+CUR_MODULES := $(shell find $(MODULES) -mindepth 1 -type d)
 
 LFLAGS_ACC := $(LFLAGS)
 CFLAGS_ACC := $(addprefix -I,$(INCLUDE_DIRS)) $(CFLAGS)
