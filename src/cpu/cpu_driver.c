@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/11 04:06:04 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/08/14 04:16:32 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_primitive *prim;
 			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
 			{
-				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
+/*				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
 																		 0.01f)),
 										   scene->spots[0].pos);
 				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
@@ -106,8 +106,8 @@ void draw_scene(t_display *disp, t_scene *scene)
 					float coef = vec3_dot(hit.normal, shadow_ray.dir);
 					coef = coef < 0 ? 0.0 : coef;
 					diff = vec3_muls(prim->diffuse, coef);
-					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
-				}
+				}*/
+				disp->renderer_driver->ctx->fb[y * 1280 + x] = prim->diffuse;
 			}
 			++x;
 		}
@@ -128,7 +128,7 @@ float conv(float c)
 
 void internal_draw(void *param)
 {
-	static int done = 0;
+/*	static int done = 0;
 	t_driver *self;
 	t_display *disp;
 	t_scene *scene;
@@ -150,7 +150,26 @@ void internal_draw(void *param)
 					conv(disp->renderer_driver->ctx->fb[i].s.z)
 				};
 	}
-	xmlx_present(self->ctx->win_ptr);
+	xmlx_present(self->ctx->win_ptr);*/
+	(void)param;
+	t_vec3 p, d;
+	p.s = (t_3dvec){0, 0, 0};
+	d.s = (t_3dvec){0, 1, 0};
+	t_mat4 rot = mat4_rotation((t_3dvec){1, 0, 0}, deg2rad(90));
+	t_mat4 irot = mat4_inverse(rot);
+	t_mat3 norm = mat3_transpose(mat3_topleft(rot));
+	t_mat3 inorm = mat3_transpose(mat3_topleft(irot));
+
+
+	t_vec3 t = mat4_transform3(rot, p);
+	printf("%f, %f, %f\n", t.v[0], t.v[1], t.v[2]);
+	t = mat4_transform3(irot, t);
+	printf("%f, %f, %f\n", t.v[0], t.v[1], t.v[2]);
+	t = mat3_transform3(norm, d);
+	printf("%f, %f, %f\n", t.v[0], t.v[1], t.v[2]);
+	t = mat3_transform3(inorm, t);
+	printf("%f, %f, %f\n", t.v[0], t.v[1], t.v[2]);
+	exit(1);
 }
 
 void cpu_genimage(t_driver *self, t_display *disp)
