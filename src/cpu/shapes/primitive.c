@@ -26,6 +26,7 @@ int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
 	t_ray from2;
 	int res;
 
+	/* FIXME: Incohérences dans l'utilisation des inverses  */
 	from2 = transform_ray(self->itransform, self->norm, from);
 	res = self->intersect(self, &from2, info);
 	if (res)
