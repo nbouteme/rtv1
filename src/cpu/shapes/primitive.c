@@ -26,7 +26,7 @@ int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
 	t_ray from2;
 	int res;
 
-	from2 = transform_ray(self->itransform, self->inorm, from);
+	from2 = transform_ray(self->itransform, self->norm, from);
 	res = self->intersect(self, &from2, info);
 	if (res)
 	{

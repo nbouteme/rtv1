@@ -38,7 +38,7 @@ t_scene *generate_scene(t_iscene *fn)
 */	ret->primitives[0] = new_cylinder(malloc(sizeof(t_cylinder)),
 								mat4_mult(
 									mat4_translate((t_3dvec){0.0f, 0.0f, 20.0f }),
-									mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, deg2rad(90))
+									mat4_rotation((t_3dvec){0.0f, 1.0f, 0.0f}, deg2rad(angle))
 									),
 									(t_3dvec){0.0f, 0.5f, 0.5f});
 /*	ret->primitives[1] = new_plane(malloc(sizeof(t_plane)),

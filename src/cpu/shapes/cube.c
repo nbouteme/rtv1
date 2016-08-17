@@ -27,6 +27,7 @@ bool cube_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	t_vec3 tmax;
 
 	t_cube *self;
+	(void) self;
 	self = (void*)base;
 	(void)out;
 	if (ray->dir.v[0] == ray->dir.v[1] && ray->dir.v[1] == 0)
