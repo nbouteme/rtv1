@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <core/core.h>
 #include <libft/std.h>
+#include <core/core.h>
+#include <unistd.h>
 
 void usage()
 {
@@ -23,12 +24,27 @@ float angle;
 
 int main(int argc, char **argv)
 {
-	t_iscene *scene;
+/*	t_iscene *scene;
 	t_display *display;
-
+*/
 	if (argc != 2)
 		usage();
-	angle = atof(argv[1]);
+	unsigned long size;
+	void *buff = from_file(argv[1], &size, scene_file_check);
+	if (!buff)
+		return !!write(2, "An error occured.\n", 18);
+	t_lexer *lex = new_lexer((t_lexer_init_params) {
+			buff, size, 6,
+				(const char *[]){"<-", "{", "}", ",", ".", ":"},
+				(int[]){SYM_WELL, SYM_LBRA, SYM_RBRA, SYM_COM, SYM_DOT, SYM_SCOL}
+		});
+	t_dlisthead *tokens = lexer_pass(lex);
+	t_scene_parser *parsed_scene = parser_pass(tokens);
+	print_tokens(tokens);
+	free(buff);
+	delete_lexer(lex);
+	delete_scene(parsed_scene);
+/*	angle = atof(argv[1]);
 	scene = load_iscene(argv[1]);
 	display = new_display((t_display_init_param)
 						  {
@@ -39,5 +55,6 @@ int main(int argc, char **argv)
 						});
 	register_display(display);
 	run_display(display);
+*/
 	return 0;
 }

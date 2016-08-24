@@ -43,7 +43,7 @@ ifeq ($(LINK_CFG),)
 $(error $(call redout,Missing link config file))
 endif
 
-PKG_DIR = .
+PKG_DIR = $(shell pwd)
 
 include $(BUILD_CFG)
 
@@ -73,6 +73,7 @@ CUR_OUTPUT := $(OUTPUT)
 CUR_MODULES := $(shell find $(MODULES) -mindepth 1 -type d)
 
 LFLAGS_ACC := $(LFLAGS)
+INCLUDE_DIRS_ACC := $(INCLUDE_DIRS)
 CFLAGS_ACC := $(addprefix -I,$(INCLUDE_DIRS)) $(CFLAGS)
 
 S_LFLAGS_ACC := $(LFLAGS_$(SYSTEM))
@@ -87,30 +88,31 @@ $1:
 	make -C $2 RUNDIR=$(RUNDIR)
 endef
 
-$(foreach dep,$(CUR_DEPS), \
-	$(foreach dir,$(SUBFOLDERS), \
-		$(eval CURNAME:=$(call get_val_in_file,$(dir)/config/build_cfg.mk,NAME))\
-		$(if $(call file_exist,$(dir)/config/build_cfg.mk),\
-			$(eval \
-				CURNAME=$(call get_val_in_file,$(dir)/config/build_cfg.mk,NAME)\
-				$(if $(call eq,$(CURNAME),$(dep)), \
-					$(if $(shell make -q -C $(dir) RUNDIR=$(RUNDIR) &> /dev/null || echo "not_updat_ed"),\
-						$(shello make --no-print-directory -C $(dir) RUNDIR=$(RUNDIR)))\
-					$(eval $(dep)_FOUND=true) \
-					$(eval PKG_DIR=$(dir)) \
-					$(eval include $(dir)/config/link_cfg.mk)\
-					$(eval LFLAGS_ACC += $(LFLAGS))\
-					$(eval CFLAGS_ACC += $(CFLAGS))\
-					$(eval SFLAGS_ACC += $(SFLAGS_$(SYSTEM)))\
-					$(eval S_LFLAGS_ACC += $(LFLAGS_$(SYSTEM)))\
-					$(eval S_CFLAGS_ACC += $(CFLAGS_$(SYSTEM)))\
-					$(eval include $(dir)/config/build_cfg.mk)\
-					$(eval DEP_ACC += $(OUTPUT))\
-					$(eval $(call GEN_DEP_RULE,$(OUTPUT),$(dir))))\
-			)\
-		)\
-	)\
-	$(if $($(dep)_FOUND),,$(error Dependency $(dep) not found.))\
+$(foreach dep,$(CUR_DEPS),																					\
+	$(foreach dir,$(SUBFOLDERS),																			\
+		$(eval CURNAME:=$(call get_val_in_file,$(dir)/config/build_cfg.mk,NAME))							\
+		$(if $(call file_exist,$(dir)/config/build_cfg.mk),													\
+			$(eval																							\
+				CURNAME=$(call get_val_in_file,$(dir)/config/build_cfg.mk,NAME)								\
+				$(if $(call eq,$(CURNAME),$(dep)),															\
+					$(if $(shell make -q -C $(dir) RUNDIR=$(RUNDIR) &> /dev/null || echo "not_updat_ed"),	\
+						$(shello make --no-print-directory -C $(dir) RUNDIR=$(RUNDIR)))						\
+					$(eval $(dep)_FOUND=true)																\
+					$(eval PKG_DIR=$(dir))																	\
+					$(eval include $(dir)/config/link_cfg.mk)												\
+					$(eval LFLAGS_ACC += $(LFLAGS))															\
+					$(eval CFLAGS_ACC += $(CFLAGS))															\
+					$(eval INCLUDE_DIRS_ACC += $(INCLUDE_DIRS))												\
+					$(eval SFLAGS_ACC += $(SFLAGS_$(SYSTEM)))												\
+					$(eval S_LFLAGS_ACC += $(LFLAGS_$(SYSTEM)))												\
+					$(eval S_CFLAGS_ACC += $(CFLAGS_$(SYSTEM)))												\
+					$(eval include $(dir)/config/build_cfg.mk)												\
+					$(eval DEP_ACC += $(OUTPUT))															\
+					$(eval $(call GEN_DEP_RULE,$(OUTPUT),$(dir))))											\
+			)																								\
+		)																									\
+	)																										\
+	$(if $($(dep)_FOUND),,$(error Dependency $(dep) not found.))											\
 )
 
 SRCS := $(call src_from_modules, $(CUR_MODULES))
@@ -133,9 +135,9 @@ build/$1/%.o: $1/%.c
 	@$(CC) $$(CFLAGS_ACC) $$(S_CFLAGS_ACC) -c $$^ -o $$@ $$(SFLAGS_ACC)
 endef
 
-$(foreach mod,$(CUR_MODULES),\
-	$(eval BUILD_DEPS += build/$(mod))\
-	$(eval $(call BUILD_DIR_RULE,$(mod)))\
+$(foreach mod,$(CUR_MODULES),				\
+	$(eval BUILD_DEPS += build/$(mod))		\
+	$(eval $(call BUILD_DIR_RULE,$(mod)))	\
 )
 
 $(print-head $(CUR_OUTPUT),$(TERM_WIDTH))
@@ -152,12 +154,15 @@ else
 endif
 	@printf "\e[32m✓\e[0m\n"
 
-.PHONY: clean fclean re all
+.PHONY: clean fclean re all inc
 
 clean: | tail
 	@/bin/rm -rf $(addprefix build/,$(OBJS))
 
 fclean: clean | tail
 	@/bin/rm -rf $(CUR_OUTPUT) build
+
+inc: | tail
+	$(info $(INCLUDE_DIRS_ACC))
 
 re: fclean all

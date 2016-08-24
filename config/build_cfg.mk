@@ -3,8 +3,9 @@ TYPE = prog
 
 MODULES = src
 CFLAGS = -Wall -Wextra -Werror -g
-LFLAGS = -Wall -Wextra -Werror -g -lm
-INCLUDE_DIRS = ./include
+#CFLAGS = -Wall -Wextra -Werror -flto -Ofast -march=native -mtune=native -ffinite-math-only -funsafe-math-optimizations -fno-math-errno  -ffast-math
+LFLAGS = $(CFLAGS) -lm
+INCLUDE_DIRS = $(PKG_DIR)/include
 DEPS = libft xmlx
 
 OUTPUT = $(NAME)
