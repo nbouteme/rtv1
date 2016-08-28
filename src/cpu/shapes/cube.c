@@ -59,10 +59,3 @@ bool cube_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
         tmax.v[0] = tmax.v[2];
     return true;
 }
-
-t_primitive *new_cube(t_cube *ret, t_mat4 trans, t_vec3 color)
-{
-	new_primitive(&ret->base, trans, color);
-	ret->base.intersect = cube_ray_intersect;
-	return ((t_primitive*)ret);
-}

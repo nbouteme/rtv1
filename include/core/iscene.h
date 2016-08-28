@@ -19,8 +19,32 @@ typedef enum
 {
 	PLANE,
 	SPHERE,
+	CONE,
+	CYLINDER,
 	CUBE
 } t_prim_type;
+
+typedef struct	s_itrans
+{
+	t_vec3 pos;
+	t_vec3 rot_axis;
+	float rot_angle;
+	t_vec3 scale;
+} t_itrans;
+
+typedef struct	s_imaterial
+{
+	float ambiant[3];
+	float diffuse[3];
+	float spec_intensity;
+}				t_imaterial;
+
+typedef struct	s_iprimitive
+{
+	t_prim_type type;
+	t_imaterial mat;
+	t_itrans trans;
+}				t_iprimitive;
 
 typedef struct	s_iscene
 {
@@ -28,7 +52,7 @@ typedef struct	s_iscene
 	float cam_dir[3];
 	int n_primitives;
 	int n_spots;
-	t_prim_type *primitives;
+	t_iprimitive *primitives;
 	t_spot *spots;
 }				t_iscene;
 

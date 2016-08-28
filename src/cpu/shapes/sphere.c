@@ -14,16 +14,15 @@
 
 bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 {
-	t_sphere *self;
 	t_vec3 l;
 	float b;
 	float c;
 	float tmp;
 
-	self = (void*)base;
+	(void)base;
 	l = ray->pos;
 	b = 2 * vec3_dot(ray->dir, l);
-	c = vec3_dot(l, l) - self->radius2;
+	c = vec3_dot(l, l) - 1;
 	if (!solve_second(&(t_sec_equation){vec3_dot(ray->dir, ray->dir), b, c, &b, &c}))
 		return (0);
 	if (b > c)
@@ -43,13 +42,4 @@ bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	vec3_normalize(&out->normal);
 	out->dist = b;
 	return (1);
-}
-
-t_primitive *new_sphere(t_sphere *ret, float radius, t_vec3 pos, t_vec3 color)
-{
-	new_primitive(&ret->base, mat4_translate(pos), color);
-	ret->base.intersect = sphere_ray_intersect;
-	ret->radius = radius;
-	ret->radius2 = radius * radius;
-	return ((t_primitive*)ret);
 }

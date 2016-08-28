@@ -87,14 +87,10 @@ t_mat4 mat4_inverse(t_mat4 m)
 		vec[i].s = (t_4dvec){ m.v[1][i], m.v[0][i], m.v[0][i], m.v[0][i] };
 		++i;
 	}
-	inv[0] = vec4_sub(vec4_mul(vec[1], faces[0]), vec4_add(vec4_mul(vec[2], faces[1]),
-														   vec4_mul(vec[3], faces[2])));
-	inv[1] = vec4_sub(vec4_mul(vec[0], faces[0]), vec4_add(vec4_mul(vec[2], faces[3]),
-														   vec4_mul(vec[3], faces[4])));
-	inv[2] = vec4_sub(vec4_mul(vec[0], faces[1]), vec4_add(vec4_mul(vec[1], faces[3]),
-														   vec4_mul(vec[3], faces[5])));
-	inv[3] = vec4_sub(vec4_mul(vec[0], faces[2]), vec4_add(vec4_mul(vec[1], faces[4]),
-														   vec4_mul(vec[2], faces[5])));
+	inv[0] = vec4_add(vec4_sub(vec4_mul(vec[1], faces[0]), vec4_mul(vec[2], faces[1])), vec4_mul(vec[3], faces[2]));
+	inv[1] = vec4_add(vec4_sub(vec4_mul(vec[0], faces[0]), vec4_mul(vec[2], faces[3])), vec4_mul(vec[3], faces[4]));
+	inv[2] = vec4_add(vec4_sub(vec4_mul(vec[0], faces[1]), vec4_mul(vec[1], faces[3])), vec4_mul(vec[3], faces[5]));
+	inv[3] = vec4_add(vec4_sub(vec4_mul(vec[0], faces[2]), vec4_mul(vec[1], faces[4])), vec4_mul(vec[2], faces[5]));
 	sign[0].s = (t_4dvec){+1, -1, +1, -1};
 	sign[1].s = (t_4dvec){-1, +1, -1, +1};
 	i = 0;

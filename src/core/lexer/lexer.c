@@ -1,18 +1,5 @@
 #include <core/core.h>
 
-typedef struct	s_lexer
-{
-	int line;
-	int col;
-	int cur;
-	char *file;
-	unsigned long size;
-	int n_tokens;
-	int *syms;
-	char **tokens;
-	t_dlisthead *token_list;
-}				t_lexer;
-
 int get_tok_idx(char **toks, int max, char *k)
 {
 	int i;
@@ -82,17 +69,16 @@ int make_token(t_lexer *lex)
 		lex->col = 0;
 	}
 	if (ft_isspace(lex->file[lex->cur]))
-		return !++lex->col;
+		return !(lex->col += lex->file[lex->cur] == '\t' ? 8 : 1);
 	if ((i = get_tok_idx(lex->tokens, lex->n_tokens, &lex->file[lex->cur])) != -1)
 		emit_token(lex, &lex->file[lex->cur], &lex->file[lex->cur +
 														ft_strlen(lex->tokens[i])]);
-	if (i == -1)
-	{
-		e = &lex->file[lex->cur];
-		while (ft_isalnum(*e))
-			++e;
-		emit_token(lex, &lex->file[lex->cur], e);
-	}
+	if (i != -1)
+		return 1;
+	e = &lex->file[lex->cur];
+	while (!ft_strchr("<-.{},: \n\t", *e))
+		++e;
+	emit_token(lex, &lex->file[lex->cur], e);
 	return 1;
 }
 

@@ -19,7 +19,7 @@ t_object *get_prop(t_assarray *arr, char *key)
 
 	ret = ftext_lstfind(arr->pairs, (void*)pairkey_cmp, key);
 	if (ret)
-		return ret->content;
+		return ((t_pair*)ret->content)->value;
 	return (0);
 }
 
@@ -81,6 +81,8 @@ void found_ref(t_dlist *elem, t_scene_parser *in)
 
 	ref = elem->content;
 	ref->lazy_reference = get_value(in, ref->target_name, ref->member_name);
+	if (!ref->lazy_reference)
+		in->valid = false;
 }
 
 void do_nothing(t_dlist *elem, t_scene_parser *in)
@@ -125,7 +127,7 @@ void find_ref_in_array(t_dlist *elem, t_scene_parser *in)
 void find_ref_in_object(t_dlist *elem, t_scene_parser *in)
 {
 	const t_finder finders[] = {find_ref_in_array, find_ref_in_assarray, found_ref,
-								do_nothing};
+								do_nothing, do_nothing};
 	t_object *obj;
 
 	obj = elem->content;
@@ -142,7 +144,7 @@ void find_ref_in_sink(t_dlist *elem, t_scene_parser *in)
 
 	sink = elem->content;
 	tmp.content = sink->value;
-	if (sink)
+	if (tmp.content)
 		find_ref_in_object(&tmp, in);
 	else
 		in->valid = false;

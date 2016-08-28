@@ -41,12 +41,3 @@ bool cylinder_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	out->dist = b;
 	return (1);
 }
-
-t_primitive *new_cylinder(t_cylinder *ret, t_mat4 trans, t_vec3 color)
-{
-	new_primitive(&ret->base, trans, color);
-	ret->base.intersect = cylinder_ray_intersect;
-	ret->radius = 1.0f;
-	ret->radius2 = 1.0f;
-	return ((t_primitive*)ret);
-}

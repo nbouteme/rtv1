@@ -23,6 +23,41 @@ enum {
 	TOK_DOR = 0x2
 };
 
+void print_tok(int tok, t_scene_parser *p)
+{
+	if (tok < 0)
+		return ft_putstr(tok == SYM_EOF ? "end of file" : "string");
+	ft_putstr("token `");
+	ft_putstr(p->lex->tokens[tok]);
+	ft_putchar('`');
+}
+
+void highlight_line(t_scene_parser *p, int line, int col)
+{
+	int i;
+
+	i = 0;
+	ft_putendl(p->file[line - 1] ? p->file[line - 1] : "");
+	while (i++ < col - 1)
+		ft_putchar(' ');
+	ft_putchar('^');
+	ft_putchar('\n');
+}
+
+void print_error(t_token *tok, t_scene_parser *p, int exp)
+{
+	ft_putstr("Unexpected ");
+	print_tok(tok->sym, p);
+	ft_putstr(" instead of ");
+	print_tok(exp, p);
+	ft_putstr(", near ");
+	ft_putnbr(tok->line);
+	ft_putstr(":");
+	ft_putnbr(tok->col);
+	ft_putstr(".\n");
+	highlight_line(p, tok->line, tok->col);
+}
+
 int assert_tok(t_dlist **elem, int tok, int op)
 {
 	t_scene_parser *p;
@@ -36,13 +71,7 @@ int assert_tok(t_dlist **elem, int tok, int op)
 	cond = (op & 1) == TOK_EQ ? (obj->sym == tok) : (obj->sym != tok);
 	if (!cond && ((op & 2) == TOK_DOR))
 	{
-		ft_putstr("Unexpected `");
-		ft_putstr(obj->value);
-		ft_putstr("` token at ");
-		ft_putnbr(obj->line);
-		ft_putchar(':');
-		ft_putnbr(obj->col);
-		ft_putchar('\n');
+		print_error(obj, p, tok);
 		p->valid = false;
 		return 0;
 	}
@@ -63,7 +92,7 @@ t_object *parse_array(t_dlist **elem)
 	ret->base.type = ARRAY;
 	ret->values = ftext_lstnew();
 	next_token(&arr, elem);
-	while (assert_tok(elem, SYM_RBRA, TOK_NEQ))
+	while (1)
 	{
 		ftext_lstpush_back(ret->values, ftext_lstnewelemown(parse_object(elem), 0));
 		arr = (*elem)->content;
@@ -79,7 +108,7 @@ t_object *parse_array(t_dlist **elem)
 
 t_object *try_parse_array(t_dlist **elem)
 {
-	if (assert_tok(elem, SYM_SCOL, TOK_EQ))
+	if (assert_tok(&(*elem)->next->next, SYM_SCOL, TOK_EQ))
 		return (t_object *)parse_assarray(elem);
 	return (t_object *)parse_array(elem);
 }
@@ -96,6 +125,41 @@ t_object *parse_string(t_dlist **elem)
 	ret->base.type = STRING;
 	ret->value = ft_strdup(arr->value);
 	*elem = (*elem)->next;
+	return (t_object*)ret;
+}
+
+int str_isdigit(const char *str)
+{
+	const char *s;
+
+	s = str;
+	while (*s)
+		if (!ft_isdigit(*s++))
+			return (0);
+	return 1;
+}
+
+t_object *parse_scalar(t_dlist **elem)
+{
+	t_scalar *ret;
+	t_token *arr;
+
+	arr = (*elem)->content;
+	if (!assert_tok(elem, SYM_STRING, TOK_EQ | TOK_DOR) ||
+		!str_isdigit(arr->value))
+		return (0);
+	ret = ft_memalloc(sizeof(*ret));
+	ret->base.type = SCALAR;
+	ret->value = ft_atoi(arr->value);
+	next_token(&arr, elem);
+	if (!assert_tok(elem, SYM_DOT, TOK_EQ))
+		return ((t_object*)ret);
+	next_token(&arr, elem);
+	if (!assert_tok(elem, SYM_STRING, TOK_EQ | TOK_DOR) ||
+		!str_isdigit(arr->value))
+		return (0);
+	*elem = (*elem)->next;
+	ret->value += ((float)ft_atoi(arr->value)) / (ft_strlen(arr->value) * 10);
 	return (t_object*)ret;
 }
 
@@ -123,7 +187,9 @@ t_object *parse_reference(t_dlist **elem)
 
 t_object *try_parse_simple(t_dlist **elem)
 {
-	if (assert_tok(elem, SYM_DOT, TOK_EQ))
+	if (str_isdigit(((t_token*)(*elem)->content)->value))
+		return (t_object *)parse_scalar(elem);
+	else if (assert_tok(&(*elem)->next, SYM_DOT, TOK_EQ))
 		return (t_object *)parse_reference(elem);
 	return (t_object *)parse_string(elem);
 }
@@ -149,7 +215,11 @@ t_pair *parse_pair(t_dlist **elem)
 	ret->key = ft_strdup(arr->value);
 	next_token(&arr, elem);
 	if (!assert_tok(elem, SYM_SCOL, TOK_EQ | TOK_DOR))
+	{
+		free(ret->key);
+		free(ret);
 		return (0);
+	}
 	next_token(&arr, elem);
 	ret->value = parse_object(elem);
 	return ret;
@@ -167,16 +237,17 @@ t_object *parse_assarray(t_dlist **elem)
 	ret->base.type = ASSARRAY;
 	ret->pairs = ftext_lstnew();
 	next_token(&arr, elem);
-	while (assert_tok(elem, SYM_RBRA, TOK_NEQ))
+	while (1)
 	{
 		ftext_lstpush_back(ret->pairs, ftext_lstnewelemown(parse_pair(elem), 0));
 		arr = (*elem)->content;
-		if (!assert_tok(elem, SYM_COM, TOK_NEQ | TOK_DOR) &&
-			!assert_tok(elem, SYM_RBRA, TOK_NEQ | TOK_DOR))
+		if (assert_tok(elem, SYM_RBRA, TOK_EQ))
+			break;
+		if (!assert_tok(elem, SYM_COM, TOK_EQ | TOK_DOR))
 			return (0);
-		if (assert_tok(elem, SYM_COM, TOK_EQ))
-			next_token(&arr, elem);
+		next_token(&arr, elem);
 	}
+	*elem = (*elem)->next;
 	return (t_object*)ret;
 }
 
@@ -200,7 +271,7 @@ void parse_sink(t_scene_parser *parser, t_dlist **elem)
 	ftext_lstpush_back(parser->sinks, ftext_lstnewelem(&parsed, sizeof(parsed)));
 }
 
-t_scene_parser *parser_pass(t_dlisthead *tokens)
+t_scene_parser *parser_pass(t_lexer *lex)
 {
 	t_scene_parser *parser;
 	t_dlist *next;
@@ -208,13 +279,15 @@ t_scene_parser *parser_pass(t_dlisthead *tokens)
 	parser = malloc(sizeof(*parser));
 	bind_parser(parser);
 	parser->valid = true;
+	parser->lex = lex;
 	parser->sinks = ftext_lstnew();
-	next = tokens->next;
-	while (next != (t_dlist*)tokens
-		&& ((t_token*)next->content)->sym != SYM_EOF)
+	parser->file = ft_strsplit(parser->lex->file, '\n');
+	next = lex->token_list->next;
+	while (next != (t_dlist*)lex->token_list
+		&& ((t_token*)next->content)->sym != SYM_EOF
+		&& parser->valid)
 	{
 		parse_sink(parser, &next);
-		next = next->next;
 	}
 	return second_pass(parser);
 }

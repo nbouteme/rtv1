@@ -19,6 +19,7 @@ typedef enum
 # include <core/driver_interface.h>
 # include <core/lexer.h>
 # include <core/parser.h>
+# include <core/generator.h>
 # include <core/utils.h>
 
 #endif

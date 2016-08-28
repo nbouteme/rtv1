@@ -44,10 +44,3 @@ bool cone_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	out->dist = b;
 	return (1);
 }
-
-t_primitive *new_cone(t_cone *ret, t_mat4 trans, t_vec3 color)
-{
-	new_primitive(&ret->base, trans, color);
-	ret->base.intersect = cone_ray_intersect;
-	return ((t_primitive*)ret);
-}

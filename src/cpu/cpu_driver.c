@@ -25,30 +25,38 @@ void cpu_init(t_driver *self)
 	self->ctx->fb = (t_vec3*)self->ctx->image->buffer;
 }
 
-int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_primitive **out)
+typedef struct	s_inter_info
+{
+	float maxdist;
+	t_primitive **out;
+}				t_inter_info;
+
+int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 {
 	int i;
-	float mindist;
+	bool hit_found;
 	t_hit_info back;
 
-	mindist = 500.0f;
+
+	hit_found = false;
 	i = 0;
 	while (i < scene->n_primitives)
 	{
 		back = *hit;
-		if (intersect(scene->primitives[i], from, hit))
+		if (intersect(&scene->primitives[i], from, hit))
 		{
-			if (mindist > hit->dist)
+			if (out->maxdist > hit->dist)
 			{
-				mindist = hit->dist;
-				*out = scene->primitives[i];
+				out->maxdist = hit->dist;
+				hit_found = true;
+				*out->out = &scene->primitives[i];
 			}
 			else
 				*hit = back;
 		}
 		++i;
 	}
-	return (mindist != 500.0f);
+	return (hit_found);
 }
 
 t_ray gen_ray(t_vec3 from, t_vec3 to);
@@ -96,12 +104,13 @@ void draw_scene(t_display *disp, t_scene *scene)
 			t_ray from_cam = gen_camray(x, y, scene->cam_pos, scene->cam_dir);
 			t_hit_info hit;
 			t_primitive *prim = 0;
-			if (intersect_with_smth(&from_cam, scene, &hit, &prim))
+			if (intersect_with_smth(&from_cam, scene, &hit, &(t_inter_info){ 500.0f, &prim}))
 			{
 				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
-																		 0.1f)),
+																		 0.5f)),
 										   scene->spots[0].pos);
-				if (!intersect_with_smth(&shadow_ray, scene, &hit, &prim))
+				if (!intersect_with_smth(&shadow_ray, scene, &hit,
+&(t_inter_info){vec3_norme(vec3_sub(scene->spots[0].pos, hit.point)), &prim}))
 				{
 					t_vec3 diff;
 					float coef = vec3_dot(hit.normal, shadow_ray.dir);

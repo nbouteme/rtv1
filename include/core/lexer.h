@@ -12,11 +12,25 @@ typedef struct	s_token
 }				t_token;
 
 enum {
+	SYM_EOF = -2,
 	SYM_STRING = -1,
-	SYM_WELL, SYM_LBRA, SYM_RBRA, SYM_COM, SYM_DOT, SYM_SCOL,
-	SYM_EOF
+	SYM_WELL, SYM_LBRA, SYM_RBRA, SYM_COM, SYM_DOT, SYM_SCOL
 };
+
 typedef struct	s_lexer t_lexer;
+
+typedef struct	s_lexer
+{
+	int line;
+	int col;
+	int cur;
+	char *file;
+	unsigned long size;
+	int n_tokens;
+	int *syms;
+	char **tokens;
+	t_dlisthead *token_list;
+}				t_lexer;
 
 typedef struct s_lexer_init_params
 {

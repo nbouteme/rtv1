@@ -24,5 +24,6 @@ typedef struct	s_sphere
 }				t_sphere;
 
 t_primitive *new_sphere(t_sphere *self, float radius, t_vec3 pos, t_vec3 color);
+bool sphere_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out);
 
 #endif

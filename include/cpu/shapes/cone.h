@@ -24,5 +24,6 @@ typedef struct	s_cone
 }				t_cone;
 
 t_primitive *new_cone(t_cone *self, t_mat4 trans, t_vec3 color);
+bool cone_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out);
 
 #endif

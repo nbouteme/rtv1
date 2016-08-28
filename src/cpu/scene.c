@@ -22,32 +22,31 @@ float deg2rad(float deg)
 
 extern float angle;
 
+
+#define I2(a, b) a ## b
+#define I(x) I2(x, _ray_intersect)
+
 t_scene *generate_scene(t_iscene *fn)
 {
+	const t_ray_intersect_fun funs[] = {I(plane), I(sphere),
+										I(cone), I(cylinder)};
 	t_scene *ret;
+	int i;
 
-	(void)fn;
+	i = 0;
 	ret = ft_memalloc(sizeof(*ret));
-	ret->n_primitives = 1;
-	ret->n_spots = 1;
-	ret->cam_dir.s = (t_3dvec){0.0f, 0.0f, 1.0f};
-	ret->primitives = malloc(sizeof(t_primitive*) * 2);
-/*	ret->primitives[0] = new_sphere(malloc(sizeof(t_sphere)), 1.0f,
-									(t_3dvec){ 0, 0, 20.0f },
-									(t_3dvec){0.5f, 0.5f, 0.5f});
-*/	ret->primitives[0] = new_cone(malloc(sizeof(t_cone)),
-								mat4_mult(
-									mat4_translate((t_3dvec){0.0f, 0.0f, 20.0f }),
-									mat4_rotation((t_3dvec){0.0f, 1.0f, 0.0f}, deg2rad(angle))
-									),
-									(t_3dvec){0.0f, 0.5f, 0.5f});
-/*	ret->primitives[1] = new_plane(malloc(sizeof(t_plane)),
-								mat4_mult(
-									mat4_translate((t_3dvec){0.0f, 0.0f, 30.0f }),
-									mat4_rotation((t_3dvec){1.0f, 0.0f, 0.0f}, deg2rad(angle))
-									),
-								   (t_3dvec){0.0f, 0.5f, 0.5f});*/
-	ret->spots = new_spot(malloc(sizeof(*ret->spots)),
-						  (t_3dvec){ -5.0f, -5.0f, -5.0f });
+	ft_memcpy(ret->cam_dir.v, fn->cam_dir, sizeof(t_vec3));
+	ft_memcpy(ret->cam_pos.v, fn->cam_pos, sizeof(t_vec3));
+	ret->n_primitives = fn->n_primitives;
+	ret->n_spots = fn->n_spots;
+	ret->spots = ft_memcpy(malloc(sizeof(t_spot) * fn->n_spots), fn->spots,
+						sizeof(t_spot) * fn->n_spots);
+	ret->primitives = malloc(sizeof(t_primitive) * fn->n_primitives);
+	while (i < fn->n_primitives)
+	{
+		new_primitive(&ret->primitives[i], &fn->primitives[i]);
+		ret->primitives[i].intersect = funs[fn->primitives[i].type];
+		++i;
+	}
 	return (ret);
 }

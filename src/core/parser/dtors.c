@@ -45,3 +45,8 @@ void string_dtor(t_object *o)
 	free(str->value);
 	free(o);
 }
+
+void scalar_dtor(t_object *o)
+{
+	free(o);
+}

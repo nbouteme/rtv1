@@ -24,5 +24,6 @@ typedef struct	s_cylinder
 }				t_cylinder;
 
 t_primitive *new_cylinder(t_cylinder *self, t_mat4 trans, t_vec3 color);
+bool cylinder_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out);
 
 #endif
