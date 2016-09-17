@@ -33,11 +33,10 @@ bool cone_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 			return (0);
 		b = c;
 	}
-	a = 1.0f / sqrtf(3.0f);
 	out->point = vec3_add(ray->pos, vec3_muls(ray->dir, b));
+	a = 1.0f / sqrtf(2.0f);
 	/* TODO: Compute the correct normal  */
 	out->normal = out->point;
-	out->normal.s.z = 0;
 	vec3_normalize(&out->normal);
 	out->normal.s.z = out->normal.s.z > 0 ? -a : a;
 	vec3_normalize(&out->normal);

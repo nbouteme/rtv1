@@ -16,6 +16,7 @@ t_iscene *load_iscene(const char *fn)
 				(int[]){SYM_WELL, SYM_LBRA, SYM_RBRA, SYM_COM, SYM_DOT, SYM_SCOL}
 		});
 	lexer_pass(lex);
+	print_tokens(lex->token_list);
 	parsed = parser_pass(lex);
 	if (parsed && parsed->valid)
 		ret = gen_iscene(parsed);

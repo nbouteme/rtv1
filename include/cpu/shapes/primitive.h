@@ -31,6 +31,8 @@ typedef struct	s_primitive
 	t_mat3 norm;
 	t_mat3 inorm;
 	t_vec3 diffuse;
+	t_vec3 ambiant;
+	float spec;
 }				t_primitive;
 
 t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base);

@@ -76,8 +76,10 @@ int make_token(t_lexer *lex)
 	if (i != -1)
 		return 1;
 	e = &lex->file[lex->cur];
-	while (!ft_strchr("<-.{},: \n\t", *e))
+	while (!is_token(lex, e) && !ft_isspace(*e))
+	{
 		++e;
+	}
 	emit_token(lex, &lex->file[lex->cur], e);
 	return 1;
 }

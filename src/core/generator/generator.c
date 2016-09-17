@@ -136,12 +136,14 @@ int gen_mat(t_assarray *mat, t_gen_params *out)
 	if (mat->base.type != ASSARRAY)
 		return 1;
 	cur = &out->scene->primitives[out->scene->n_primitives - 1].mat;
+	ft_memset(cur, 0, sizeof(*cur));
 	gen_value(mat, "diffuse", &cur->diffuse, &(t_genfun_params){
 			out, (void*)gen_vec3, false
 	});
 	gen_value(mat, "ambiant", &cur->ambiant, &(t_genfun_params){
 			out, (void*)gen_vec3, true
 	});
+	cur->spec_intensity = 999999.0f;
 	gen_value(mat, "spec", &cur->spec_intensity, &(t_genfun_params){
 			out, (void*)gen_float, true
 	});

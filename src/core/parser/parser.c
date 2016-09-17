@@ -133,6 +133,7 @@ int str_isdigit(const char *str)
 	const char *s;
 
 	s = str;
+	s += s[0] == '-';
 	while (*s)
 		if (!ft_isdigit(*s++))
 			return (0);

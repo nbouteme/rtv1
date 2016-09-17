@@ -26,26 +26,30 @@ int intersect(t_primitive *self, t_ray *from, t_hit_info *info)
 	t_ray from2;
 	int res;
 
-	from2 = transform_ray(self->itransform, self->inorm, from);
+	from2 = transform_ray(self->itransform, self->norm, from);
 	res = self->intersect(self, &from2, info);
 	if (res)
 	{
 		info->point = mat4_transform3(self->transform, info->point);
-		info->normal = mat3_transform3(self->norm, info->normal);
+		info->normal = mat3_transform3(self->inorm, info->normal);
 	}
 	return (res);
 }
+
+float deg2rad(float deg);
 
 t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base)
 {
 	vec3_normalize(&base->trans.rot_axis);
 	alloc->transform = mat4_mult(mat4_translate(base->trans.pos),
 								 mat4_mult(mat4_rotation(base->trans.rot_axis,
-														 base->trans.rot_angle),
+														 deg2rad(base->trans.rot_angle)),
 									 mat4_ident()));
 	alloc->itransform = mat4_inverse(alloc->transform);
 	alloc->norm = mat3_transpose(mat3_topleft(alloc->transform));
 	alloc->inorm = mat3_transpose(mat3_topleft(alloc->itransform));
 	ft_memcpy(alloc->diffuse.v, base->mat.diffuse, sizeof(t_vec3));
+	ft_memcpy(alloc->ambiant.v, base->mat.ambiant, sizeof(t_vec3));
+	alloc->spec = base->mat.spec_intensity;
 	return (alloc);
 }

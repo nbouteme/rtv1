@@ -31,6 +31,16 @@ typedef struct	s_inter_info
 	t_primitive **out;
 }				t_inter_info;
 
+typedef struct	s_colargs
+{
+	t_scene *scene;
+	t_ray *ray;
+	t_primitive *prim;
+	t_hit_info *hit;
+	t_ray shadow_ray;
+	t_vec3 light_dir;
+}				t_colargs;
+
 int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 {
 	int i;
@@ -65,9 +75,11 @@ t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
 {
 	t_vec3 u, v;
 	t_vec3 viewPlaneBottomLeftPoint;
-	float viewPlaneHalfWidth = tan(M_PI / 8);
-	float viewPlaneHalfHeight = (720.0f / 1280.0f) * viewPlaneHalfWidth;
+	float viewPlaneHalfWidth;
+	float viewPlaneHalfHeight;
 
+	viewPlaneHalfWidth = tan(M_PI / 8);
+	viewPlaneHalfHeight = (720.0f / 1280.0f) * viewPlaneHalfWidth;
 	dir = vec3_add(pos, dir);
 	u = vec3_cross(dir, (t_3dvec){0.0f, 1.0f, 0.0f});
 	v = vec3_cross(u, dir);
@@ -88,7 +100,44 @@ t_ray gen_ray(t_vec3 from, t_vec3 to)
 	ret.pos = from;
 	return (ret);
 }
-int max = 300;
+
+float maxf(float a, float b)
+{
+	return a < b ? b : a;
+}
+
+t_vec3 color_from_material(t_colargs *args)
+{
+	t_vec3 diff;
+	float coef;
+	t_vec3 refl;
+	float spec;
+	t_vec3 specv;
+
+	coef = vec3_dot(args->hit->normal, args->shadow_ray.dir);
+	refl = vec3_reflect(args->light_dir, args->hit->normal);
+	vec3_normalize(&refl);
+	spec = powf(maxf(vec3_dot(args->ray->dir, refl), 0.0), args->prim->spec);
+	specv = (t_vec3){{spec / 2, spec / 2, spec / 2 }};
+	coef = coef < 0 ? 0.0 : coef;
+	diff = vec3_muls(args->prim->diffuse, coef);
+	return vec3_add(vec3_add(specv, diff), args->prim->ambiant);
+}
+
+t_vec3 color_from_ray(t_scene *scene, t_ray *from)
+{
+	t_hit_info hit;
+	t_primitive *prim = 0;
+	if (!intersect_with_smth(from, scene, &hit, &(t_inter_info){ 9999, &prim}))
+		return (vec3_null());
+	t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.0001f)), scene->spots[0].pos);
+	t_vec3 light_dir = vec3_sub(scene->spots[0].pos, hit.point);
+	if (intersect_with_smth(&shadow_ray, scene, &hit, &(t_inter_info){vec3_norme(light_dir), &prim}))
+		return prim->ambiant;
+	return color_from_material(&(t_colargs){
+			scene, from, prim, &hit, shadow_ray, light_dir
+		});
+}
 
 void draw_scene(t_display *disp, t_scene *scene)
 {
@@ -101,24 +150,10 @@ void draw_scene(t_display *disp, t_scene *scene)
 		x = 0;
 		while (x < disp->renderer_driver->param.x)
 		{
+			if (x == 666 && y == 360)
+				puts("");
 			t_ray from_cam = gen_camray(x, y, scene->cam_pos, scene->cam_dir);
-			t_hit_info hit;
-			t_primitive *prim = 0;
-			if (intersect_with_smth(&from_cam, scene, &hit, &(t_inter_info){ 500.0f, &prim}))
-			{
-				t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal,
-																		 0.5f)),
-										   scene->spots[0].pos);
-				if (!intersect_with_smth(&shadow_ray, scene, &hit,
-&(t_inter_info){vec3_norme(vec3_sub(scene->spots[0].pos, hit.point)), &prim}))
-				{
-					t_vec3 diff;
-					float coef = vec3_dot(hit.normal, shadow_ray.dir);
-					coef = coef < 0 ? 0.0 : coef;
-					diff = vec3_muls(prim->diffuse, coef);
-					disp->renderer_driver->ctx->fb[y * 1280 + x] = diff;
-				}
-			}
+			disp->renderer_driver->ctx->fb[y * 1280 + x] = color_from_ray(scene, &from_cam);
 			++x;
 		}
 		++y;
@@ -127,13 +162,26 @@ void draw_scene(t_display *disp, t_scene *scene)
 
 float deg2rad(float deg);
 
-extern float angle;
-
 float conv(float c)
 {
 	if (c < 0.0031308f)
 		return 12.92f * c;
 	return (1.055f * powf(c, 0.4166667) - 0.055f);
+}
+
+void correct_gamma(t_vec3 *framebuffer)
+{
+	const int pixs = 720 * 1280;
+	int i;
+
+	i = -1;
+	while (++i < pixs)
+		framebuffer[i].s = (t_3dvec)
+			{
+				conv(framebuffer[i].s.x),
+				conv(framebuffer[i].s.y),
+				conv(framebuffer[i].s.z)
+			};
 }
 
 void internal_draw(void *param)
@@ -146,21 +194,11 @@ void internal_draw(void *param)
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
 	scene = generate_scene(disp->user_ptr);
-	int pixs = 720 * 1280;
-	int i;
 	if (!done)
 	{
 		draw_scene(disp, scene);
-		i = -1;
-		while (++i < pixs)
-			disp->renderer_driver->ctx->fb[i].s = (t_3dvec)
-				{
-					conv(disp->renderer_driver->ctx->fb[i].s.x),
-					conv(disp->renderer_driver->ctx->fb[i].s.y),
-					conv(disp->renderer_driver->ctx->fb[i].s.z)
-				};
+		correct_gamma(disp->renderer_driver->ctx->fb);
 		done = 1;
-		angle -= 10;
 	}
 	xmlx_present(self->ctx->win_ptr);
 }

@@ -24,5 +24,6 @@ t_vec3 vec3_cross(t_vec3 a, t_vec3 b);
 void vec3_normalize(t_vec3 *a);
 float vec3_dot(t_vec3 a, t_vec3 b);
 t_vec3 vec3_null();
+t_vec3 vec3_reflect(t_vec3 i, t_vec3 n);
 
 #endif

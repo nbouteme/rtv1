@@ -1,3 +1,4 @@
+CURDIR := $(shell pwd)
 ifeq ($(RUNDIR),)
 	RUNDIR := $(CURDIR)
 else
@@ -33,53 +34,26 @@ BUILD_CFG := $(shell ls ./config/build_cfg.mk 2> /dev/null)
 LINK_CFG := $(shell ls ./config/link_cfg.mk 2> /dev/null)
 SUBFOLDERS := $(shell find `pwd` -maxdepth 1 -type d ! -path `pwd` ! -path `pwd`/config ! -path `pwd`/build  | grep -v '/\.')
 
-CURDIR := $(shell pwd)
-
-ifeq ($(BUILD_CFG),)
-$(error $(call redout,Missing build config file))
-endif
-
-ifeq ($(LINK_CFG),)
-$(error $(call redout,Missing link config file))
-endif
-
 PKG_DIR = $(shell pwd)
 
+$(assert-error LINK_CFG,BUILD_CFG)
 include $(BUILD_CFG)
+$(assert-error NAME,OUTPUT,MODULES,TYPE)
 
-ifeq ($(NAME),)
-$(error $(call redout,Missing project name))
-endif
+CUR_NAME			:= $(NAME)
+CUR_INCLUDE_DIRS	:= $(INCLUDE_DIRS)
+CUR_OPTS			:= $(OPTS)
+CUR_TYPE			:= $(TYPE)
+CUR_DEPS			:= $(DEPS)
+CUR_OUTPUT			:= $(OUTPUT)
+CUR_MODULES			:= $(shell find $(MODULES) -mindepth 1 -type d)
 
-ifeq ($(OUTPUT),)
-$(error $(call redout,Missing project output))
-endif
-
-ifeq ($(MODULES),)
-$(error $(call redout,Missing project modules))
-endif
-
-ifeq ($(TYPE),)
-$(error $(call redout,Missing project type))
-endif
-
-CUR_NAME := $(NAME)
-CUR_INCLUDE_DIRS := $(INCLUDE_DIRS)
-CUR_OPTS := $(OPTS)
-CUR_TYPE := $(TYPE)
-CUR_DEPS := $(DEPS)
-CUR_OUTPUT := $(OUTPUT)
-
-CUR_MODULES := $(shell find $(MODULES) -mindepth 1 -type d)
-
-LFLAGS_ACC := $(LFLAGS)
-INCLUDE_DIRS_ACC := $(INCLUDE_DIRS)
-CFLAGS_ACC := $(addprefix -I,$(INCLUDE_DIRS)) $(CFLAGS)
-
-S_LFLAGS_ACC := $(LFLAGS_$(SYSTEM))
-S_CFLAGS_ACC := $(CFLAGS_$(SYSTEM))
-
-S_FLAGS_ACC := $(SFLAGS_$(SYSTEM))
+LFLAGS_ACC			:= $(LFLAGS)
+INCLUDE_DIRS_ACC	:= $(INCLUDE_DIRS)
+CFLAGS_ACC			:= $(addprefix -I,$(INCLUDE_DIRS)) $(CFLAGS)
+S_LFLAGS_ACC		:= $(LFLAGS_$(SYSTEM))
+S_CFLAGS_ACC		:= $(CFLAGS_$(SYSTEM))
+S_FLAGS_ACC			:= $(SFLAGS_$(SYSTEM))
 
 all: $(CUR_OUTPUT)
 
@@ -115,10 +89,10 @@ $(foreach dep,$(CUR_DEPS),																					\
 	$(if $($(dep)_FOUND),,$(error Dependency $(dep) not found.))											\
 )
 
-SRCS := $(call src_from_modules, $(CUR_MODULES))
-NSRCS := $(call nsrc_from_modules, $(CUR_MODULES))
-OBJS := $(SRCS:.c=.o)
-BUILD_DEPS = build
+SRCS		:= $(call src_from_modules, $(CUR_MODULES))
+NSRCS		:= $(call nsrc_from_modules, $(CUR_MODULES))
+OBJS		:= $(SRCS:.c=.o)
+BUILD_DEPS	 = build
 
 $(init-pb $(NSRCS),$(TERM_WIDTH))
 
@@ -130,9 +104,10 @@ define BUILD_DIR_RULE
 build/$1: build
 	@mkdir -p build/$1
 
-build/$1/%.o: $1/%.c
-	$$(gen-pb $$^)
-	@$(CC) $$(CFLAGS_ACC) $$(S_CFLAGS_ACC) -c $$^ -o $$@ $$(SFLAGS_ACC)
+build/$1/%.o: $1/%.c build
+	$$(eval-mod-cfg $1,CC,CFLAGS)
+	$$(gen-pb $$<)
+	@$$(MOD_CC) $$(MOD_CFLAGS) $$(CFLAGS_ACC) $$(S_CFLAGS_ACC) -c $$< -o $$@ $$(SFLAGS_ACC)
 endef
 
 $(foreach mod,$(CUR_MODULES),				\
