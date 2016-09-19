@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 	register_display(display);
 	run_display(display);
 	free(scene->spots);
+	free(scene->primitives);
 	free(scene);
 	return 0;
 }

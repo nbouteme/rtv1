@@ -193,12 +193,15 @@ void internal_draw(void *param)
 
 	self = ((void**)param)[0];
 	disp = ((void**)param)[1];
-	scene = generate_scene(disp->user_ptr);
 	if (!done)
 	{
+		scene = generate_scene(disp->user_ptr);
 		draw_scene(disp, scene);
 		correct_gamma(disp->renderer_driver->ctx->fb);
 		done = 1;
+		free(scene->primitives);
+		free(scene->spots);
+		free(scene);
 	}
 	xmlx_present(self->ctx->win_ptr);
 }
