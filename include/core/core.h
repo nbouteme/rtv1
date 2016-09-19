@@ -2,6 +2,7 @@
 # define CORE_H
 
 # include <libft/std.h>
+# include <libft/parser.h>
 # include <stdbool.h>
 # include <stdlib.h>
 
@@ -18,7 +19,6 @@ typedef enum
 # include <core/ray.h>
 # include <core/driver_interface.h>
 # include <core/lexer.h>
-# include <core/parser.h>
 # include <core/generator.h>
 # include <core/utils.h>
 

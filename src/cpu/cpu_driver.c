@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/14 04:16:32 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/19 03:36:49 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ t_vec3 color_from_ray(t_scene *scene, t_ray *from)
 	t_primitive *prim = 0;
 	if (!intersect_with_smth(from, scene, &hit, &(t_inter_info){ 9999, &prim}))
 		return (vec3_null());
-	t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.0001f)), scene->spots[0].pos);
+	t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.001f)), scene->spots[0].pos);
 	t_vec3 light_dir = vec3_sub(scene->spots[0].pos, hit.point);
 	if (intersect_with_smth(&shadow_ray, scene, &hit, &(t_inter_info){vec3_norme(light_dir), &prim}))
 		return prim->ambiant;

@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:09 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/19 23:24:00 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/19 01:20:48 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ typedef struct	s_iscene
 {
 	float cam_pos[3];
 	float cam_dir[3];
+	int camset;
 	int n_primitives;
 	int n_spots;
 	t_iprimitive *primitives;

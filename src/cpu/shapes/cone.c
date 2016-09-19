@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:46:31 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/14 03:07:15 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/19 03:33:06 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 bool cone_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 {
 	(void)base;
-	float a, b, c;//, tmp;
+	float a, b, c;
 	a = (ray->dir.s.x * ray->dir.s.x) + (ray->dir.s.y * ray->dir.s.y) - (ray->dir.s.z * ray->dir.s.z);
 	b = 2 * (ray->pos.s.x * ray->dir.s.x + ray->pos.s.y * ray->dir.s.y - ray->pos.s.z * ray->dir.s.z);
 	c = (ray->pos.s.x * ray->pos.s.x) + (ray->pos.s.y * ray->pos.s.y) - (ray->pos.s.z * ray->pos.s.z);
@@ -27,9 +27,9 @@ bool cone_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 		b = c;
 		c = a;
 	}
-	if (b < 0)
+	if (b <= 0.001f)
 	{
-		if (c < 0)
+		if (c <= 0.001f)
 			return (0);
 		b = c;
 	}

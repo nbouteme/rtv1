@@ -15,7 +15,7 @@ void *from_file(const char *fn, unsigned long *size, t_check_fun chk)
 	buff = ft_memalloc(512);
 	while (1)
 	{
-		r = read(fd, buff, 512);
+		r = read(fd, buff + *size, 512);
 		*size += r;
 		if (!chk(buff + *size, r))
 		{

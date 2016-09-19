@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/24 02:32:15 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/28 02:39:02 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/19 03:36:52 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int solve_second(t_sec_equation *eq)
 	float q;
 
 	discriminant = eq->b * eq->b - 4 * eq->a * eq->c;
-	if (discriminant < 0)
+	if (discriminant <= 0.001f)
 		return (0);
 	if (discriminant == 0)
 	{
