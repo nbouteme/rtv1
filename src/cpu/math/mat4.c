@@ -23,9 +23,14 @@ t_vec3 mat4_transform3(t_mat4 m, t_vec3 a)
 				a.v[0],
 				a.v[1],
 				a.v[2],
-				1.0f});
+				1.0f
+	});
 	return (t_vec3){
-		(t_3dvec){ret.v[0], ret.v[1], ret.v[2]}
+		(t_3dvec){
+			ret.v[0] / ret.v[3],
+			ret.v[1] / ret.v[3],
+			ret.v[2] / ret.v[3]
+		}
 	};
 }
 

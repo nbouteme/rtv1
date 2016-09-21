@@ -73,14 +73,15 @@ t_ray gen_ray(t_vec3 from, t_vec3 to);
 
 void bake_camray(t_camera *c)
 {
+	t_vec3 lap;
 	c->vphw = tan(M_PI / 8);
 	c->vphh = (720.0f / 1280.0f) * c->vphw;
-	c->dir = vec3_add(c->pos, c->dir);
-	c->u = vec3_cross(c->dir, c->up);
-	c->v = vec3_cross(c->u, c->dir);
+	lap = vec3_add(c->pos, c->dir);
+	c->u = vec3_cross(c->up, c->dir);
+	c->v = vec3_cross(c->dir, c->u);
 	vec3_normalize(&c->u);
 	vec3_normalize(&c->v);
-	c->vpblp = vec3_sub(c->dir, vec3_sub(vec3_muls(c->v, c->vphh), vec3_muls(c->u, c->vphw)));
+	c->vpblp = vec3_sub(lap, vec3_sub(vec3_muls(c->v, c->vphh), vec3_muls(c->u, c->vphw)));
 	c->v = vec3_muls(c->v, c->vphh * 2.0f / 720.0f);
 	c->u = vec3_muls(c->u, c->vphw * 2.0f / 1280.0f);
 }
@@ -151,10 +152,8 @@ void draw_scene(t_display *disp, t_scene *scene)
 		x = 0;
 		while (x < disp->renderer_driver->param.x)
 		{
-			if (x == 666 && y == 360)
-				puts("");
 			t_ray from_cam = gen_camray(x, y, &scene->cam);
-			disp->renderer_driver->ctx->fb[y * 1280 + x] = color_from_ray(scene, &from_cam);
+			disp->renderer_driver->ctx->fb[(720 - y) * 1280 + x] = color_from_ray(scene, &from_cam);
 			++x;
 		}
 		++y;

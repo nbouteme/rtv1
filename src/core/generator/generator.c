@@ -102,7 +102,6 @@ t_generror *gen_scalar(float *a, t_ast *elem)
 	{
 		n = elem->children[0]->value[0] == '-';
 		*a = ft_atoi(elem->children[0]->value + n);
-		*a = n ? -*a : *a;
 		*a += ((float)ft_atoi(elem->children[2]->value)) / pow(10, ft_strlen(elem->children[2]->value));
 		*a = n ? -*a : *a;
 	}

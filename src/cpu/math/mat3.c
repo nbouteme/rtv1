@@ -69,7 +69,6 @@ t_vec3 mat3_transform3(t_mat3 m, t_vec3 a)
 	unsigned j;
 
 	ft_memset(&ret, 0, sizeof(ret));
-
 	i = ~0;
 	while (++i < 3 && (j = ~0))
 		while (++j < 3)
