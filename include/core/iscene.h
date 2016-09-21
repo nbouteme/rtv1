@@ -50,6 +50,7 @@ typedef struct	s_iscene
 {
 	float cam_pos[3];
 	float cam_dir[3];
+	float cam_up[3];
 	int camset;
 	int n_primitives;
 	int n_spots;

@@ -1,4 +1,5 @@
 #include <core/core.h>
+#include <math.h>
 
 typedef struct	s_generror
 {
@@ -8,6 +9,11 @@ typedef struct	s_generror
 }				t_generror;
 
 typedef t_generror*(*t_sgen)(t_iscene *, t_ast *, t_ast *);
+
+static float a3_dot(float a[3], float b[3])
+{
+	return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
+}
 
 t_generror *new_gerror(t_ast *wfrag, const char *m, const char *mi)
 {
@@ -86,14 +92,19 @@ int str_arr_find(const char **a, const char *s)
 
 t_generror *gen_scalar(float *a, t_ast *elem)
 {
+	int n;
+
 	if (!strstr(elem->tag, "|int") && !strstr(elem->tag, "|float"))
 		return new_gerror(elem, "Expected scalable type, got: ", elem->tag);
 	if (strstr(elem->tag, "|int"))
 		*a = ft_atoi(elem->value);
 	else
 	{
-		*a = ft_atoi(elem->children[0]->value);
-		*a += ((float)ft_atoi(elem->children[2]->value)) / (10 * ft_strlen(elem->children[2]->value));
+		n = elem->children[0]->value[0] == '-';
+		*a = ft_atoi(elem->children[0]->value + n);
+		*a = n ? -*a : *a;
+		*a += ((float)ft_atoi(elem->children[2]->value)) / pow(10, ft_strlen(elem->children[2]->value));
+		*a = n ? -*a : *a;
 	}
 	return 0;
 }
@@ -137,6 +148,14 @@ t_generror *gen_camera(t_iscene *ret, t_ast *sink, t_ast *r)
 		return new_gerror(sink->children[2], "Couldn't find attribute in camera: ", "dir");
 	if ((e = gen_vec3(ret->cam_dir, pos, r)))
 		return e;
+	pos = eval_ref(r, get_value(sink->children[2], "up"));
+	if (!pos)
+		return new_gerror(sink->children[2], "Couldn't find attribute in camera: ", "up");
+	if ((e = gen_vec3(ret->cam_up, pos, r)))
+		return e;
+	float kek = a3_dot(ret->cam_up, ret->cam_dir);
+	if (fabs(kek) >= 0.0001f)
+		return new_gerror(sink->children[2], "Up and Direction vector aren't perpendicular: ", "You fucked up");
 	return (0);
 }
 
@@ -284,6 +303,8 @@ t_iscene *gen_iscene(t_ast *parsed, const char *input)
 		if((e = gen_sink(ret, parsed->children[i++], parsed)))
 		{
 			print_gerror(e, input);
+			free(e->message);
+			free(e->miss);
 			free(ret->primitives);
 			free(ret->spots);
 			free(ret);

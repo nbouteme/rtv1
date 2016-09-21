@@ -4,10 +4,21 @@
 # include <core/iscene.h>
 # include <cpu/shapes.h>
 
+typedef struct	s_camera
+{
+	t_vec3	pos;
+	t_vec3	dir;
+	t_vec3	up;
+	t_vec3	u;
+	t_vec3	v;
+	t_vec3	vpblp;
+	float	vphw;
+	float	vphh;
+}				t_camera;
+
 typedef struct	s_scene
 {
-	t_vec3 cam_pos;
-	t_vec3 cam_dir;
+	t_camera cam;
 	int n_primitives;
 	int n_spots;
 	t_primitive *primitives;

@@ -35,8 +35,9 @@ t_scene *generate_scene(t_iscene *fn)
 
 	i = 0;
 	ret = ft_memalloc(sizeof(*ret));
-	ft_memcpy(ret->cam_dir.v, fn->cam_dir, sizeof(t_vec3));
-	ft_memcpy(ret->cam_pos.v, fn->cam_pos, sizeof(t_vec3));
+	ft_memcpy(ret->cam.dir.v, fn->cam_dir, sizeof(t_vec3));
+	ft_memcpy(ret->cam.pos.v, fn->cam_pos, sizeof(t_vec3));
+	ft_memcpy(ret->cam.up.v, fn->cam_up, sizeof(t_vec3));
 	ret->n_primitives = fn->n_primitives;
 	ret->n_spots = fn->n_spots;
 	ret->spots = ft_memcpy(malloc(sizeof(t_spot) * fn->n_spots), fn->spots,

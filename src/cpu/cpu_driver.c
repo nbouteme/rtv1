@@ -71,24 +71,24 @@ int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_in
 
 t_ray gen_ray(t_vec3 from, t_vec3 to);
 
-t_ray gen_camray(int x, int y, t_vec3 pos, t_vec3 dir)
+void bake_camray(t_camera *c)
 {
-	t_vec3 u, v;
-	t_vec3 viewPlaneBottomLeftPoint;
-	float viewPlaneHalfWidth;
-	float viewPlaneHalfHeight;
+	c->vphw = tan(M_PI / 8);
+	c->vphh = (720.0f / 1280.0f) * c->vphw;
+	c->dir = vec3_add(c->pos, c->dir);
+	c->u = vec3_cross(c->dir, c->up);
+	c->v = vec3_cross(c->u, c->dir);
+	vec3_normalize(&c->u);
+	vec3_normalize(&c->v);
+	c->vpblp = vec3_sub(c->dir, vec3_sub(vec3_muls(c->v, c->vphh), vec3_muls(c->u, c->vphw)));
+	c->v = vec3_muls(c->v, c->vphh * 2.0f / 720.0f);
+	c->u = vec3_muls(c->u, c->vphw * 2.0f / 1280.0f);
+}
 
-	viewPlaneHalfWidth = tan(M_PI / 8);
-	viewPlaneHalfHeight = (720.0f / 1280.0f) * viewPlaneHalfWidth;
-	dir = vec3_add(pos, dir);
-	u = vec3_cross(dir, (t_3dvec){0.0f, 1.0f, 0.0f});
-	v = vec3_cross(u, dir);
-	vec3_normalize(&u);
-	vec3_normalize(&v);
-	viewPlaneBottomLeftPoint = vec3_sub(dir, vec3_sub(vec3_muls(v, viewPlaneHalfHeight), vec3_muls(u, viewPlaneHalfWidth)));
-	v = vec3_muls(v, viewPlaneHalfHeight * 2.0f / 720.0f);
-	u = vec3_muls(u, viewPlaneHalfWidth * 2.0f / 1280.0f);
-	return (gen_ray(pos, vec3_add(viewPlaneBottomLeftPoint, vec3_add(vec3_muls(v, y), vec3_muls(u, -x)))));
+t_ray gen_camray(int x, int y, t_camera *c)
+{
+	return (gen_ray(c->pos, vec3_add(c->vpblp, vec3_add(vec3_muls(c->v, y),
+														vec3_muls(c->u, -x)))));
 }
 
 t_ray gen_ray(t_vec3 from, t_vec3 to)
@@ -145,6 +145,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 	int y;
 
 	y = 0;
+	bake_camray(&scene->cam);
 	while (y < disp->renderer_driver->param.y)
 	{
 		x = 0;
@@ -152,7 +153,7 @@ void draw_scene(t_display *disp, t_scene *scene)
 		{
 			if (x == 666 && y == 360)
 				puts("");
-			t_ray from_cam = gen_camray(x, y, scene->cam_pos, scene->cam_dir);
+			t_ray from_cam = gen_camray(x, y, &scene->cam);
 			disp->renderer_driver->ctx->fb[y * 1280 + x] = color_from_ray(scene, &from_cam);
 			++x;
 		}
