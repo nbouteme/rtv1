@@ -119,7 +119,7 @@ t_vec3 color_from_material(t_colargs *args)
 	refl = vec3_reflect(args->light_dir, args->hit->normal);
 	vec3_normalize(&refl);
 	spec = powf(maxf(vec3_dot(args->ray->dir, refl), 0.0), args->prim->spec);
-	specv = (t_vec3){{spec / 2, spec / 2, spec / 2 }};
+	specv = (t_vec3){{spec, spec, spec }};
 	coef = coef < 0 ? 0.0 : coef;
 	diff = vec3_muls(args->prim->diffuse, coef);
 	return vec3_add(vec3_add(specv, diff), args->prim->ambiant);
@@ -127,17 +127,27 @@ t_vec3 color_from_material(t_colargs *args)
 
 t_vec3 color_from_ray(t_scene *scene, t_ray *from)
 {
-	t_hit_info hit;
-	t_primitive *prim = 0;
-	if (!intersect_with_smth(from, scene, &hit, &(t_inter_info){ 9999, &prim}))
+	int i = 0;
+	t_hit_info hit[2];
+	t_primitive *prim[2] = {0};
+	t_vec3 out = {{0, 0, 0}};
+	if (!intersect_with_smth(from, scene, &hit[0], &(t_inter_info){ 9999, &prim[0]}))
 		return (vec3_null());
-	t_ray shadow_ray = gen_ray(vec3_add(hit.point, vec3_muls(hit.normal, 0.001f)), scene->spots[0].pos);
-	t_vec3 light_dir = vec3_sub(scene->spots[0].pos, hit.point);
-	if (intersect_with_smth(&shadow_ray, scene, &hit, &(t_inter_info){vec3_norme(light_dir), &prim}))
-		return prim->ambiant;
-	return color_from_material(&(t_colargs){
-			scene, from, prim, &hit, shadow_ray, light_dir
-		});
+	while (i < scene->n_spots)
+	{
+		hit[1] = hit[0];
+		prim[1] = prim[0];
+		t_ray shadow_ray = gen_ray(vec3_add(hit[1].point, vec3_muls(hit[1].normal, 0.001f)), scene->spots[i].pos);
+		t_vec3 light_dir = vec3_sub(scene->spots[i].pos, hit[1].point);
+		if (intersect_with_smth(&shadow_ray, scene, &hit[1], &(t_inter_info){vec3_norme(light_dir), &prim[1]}))
+			out = vec3_add(out, prim[0]->ambiant);
+		else
+			out = vec3_add(out, color_from_material(&(t_colargs) {
+				scene, from, prim[0], &hit[1], shadow_ray, light_dir
+		}));
+		++i;
+	}
+	return vec3_muls(out, 1.0f / scene->n_spots);
 }
 
 void draw_scene(t_display *disp, t_scene *scene)
