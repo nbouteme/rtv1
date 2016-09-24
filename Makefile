@@ -121,9 +121,12 @@ build/$1/%.o: $1/%$$($1_EXT) build
 	$$($1_CC) $$($1_CFLAGS) $(ACFLAGS_ACC) $$(S_CFLAGS_ACC) -c $$< -o $$@ $$(SFLAGS_ACC)
 endef
 
-$(foreach mod,$(CUR_MODULES),				\
-	$(eval BUILD_DEPS += build/$(mod))		\
-	$(eval $(call BUILD_DIR_RULE,$(mod)))	\
+to_def = $(shell echo $1 | tr [:lower:]/ [:upper:]_)
+
+$(foreach mod,$(CUR_MODULES),						\
+	$(eval SFLAGS_ACC += -D$(call to_def,$(mod)))	\
+	$(eval BUILD_DEPS += build/$(mod))				\
+	$(eval $(call BUILD_DIR_RULE,$(mod)))			\
 )
 
 NSRCS = $(words $(SRCS))

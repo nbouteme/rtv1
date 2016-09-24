@@ -15,31 +15,26 @@
 #include <cpu/cpu.h>
 #include <cpu/cpu_driver.h>
 
+void handle_key(t_xmlx_window *self, int key, int act, int mods)
+{
+	(void)self;
+	(void)act;
+	(void)mods;
+	if (key == XMLX_KEY_ESCAPE)
+		self->stop = true;
+	printf("Received %d: (%c)\n", key, key);
+}
+
 void cpu_init(t_driver *self)
 {
 	self->ctx = ft_memalloc(sizeof(t_cpudri_data));
 	self->ctx->mlx_ptr = xmlx_init();
 	self->ctx->win_ptr = xmlx_new_window(self->param.x, self->param.y,
 										"rt", FLOAT);
+	self->ctx->win_ptr->on_key = handle_key;
 	self->ctx->image = self->ctx->win_ptr->framebuffer;
 	self->ctx->fb = (t_vec3*)self->ctx->image->buffer;
 }
-
-typedef struct	s_inter_info
-{
-	float maxdist;
-	t_primitive **out;
-}				t_inter_info;
-
-typedef struct	s_colargs
-{
-	t_scene *scene;
-	t_ray *ray;
-	t_primitive *prim;
-	t_hit_info *hit;
-	t_ray shadow_ray;
-	t_vec3 light_dir;
-}				t_colargs;
 
 int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 {

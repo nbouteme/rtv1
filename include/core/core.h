@@ -9,6 +9,7 @@
 typedef enum
 {
 	CPU_DRIVER,
+	MCPU_DRIVER,
 	CUDA_DRIVER
 }				t_display_type;
 

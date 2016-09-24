@@ -25,6 +25,7 @@ void *from_file(const char *fn, unsigned long *size, t_check_fun chk)
 		if (r != 512)
 			break;
 		buff = realloc(buff, *size + 512);
+		ft_memset(buff + *size, 0, 512);
 	}
 	return buff;
 }

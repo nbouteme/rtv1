@@ -36,10 +36,9 @@ int main(int argc, char **argv)
 		return (1);
 	}
 	display = new_display((t_display_init_param)
-						  {
-							1280,
-							720,
-							CPU_DRIVER,
+						{
+							1280, 720, 0, 0,
+							MCPU_DRIVER,
 							scene
 						});
 	register_display(display);

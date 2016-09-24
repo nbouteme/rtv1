@@ -24,6 +24,8 @@ typedef struct	s_display_init_param
 {
 	int x;
 	int y;
+	int bx;
+	int by;
 	t_display_type type;
 	void *user_ptr;
 }				t_display_init_param;
