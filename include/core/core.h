@@ -13,6 +13,13 @@ typedef enum
 	CUDA_DRIVER
 }				t_display_type;
 
+typedef enum
+{
+	XMLX_DISPLAY,
+	PNG_DISPLAY,
+	XMLX_DIRECT_DISPLAY
+}				t_display_interface;
+
 # include <core/math_types.h>
 # include <core/display.h>
 # include <core/iscene.h>

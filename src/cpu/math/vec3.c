@@ -120,6 +120,5 @@ void vec3_normalize(t_vec3 *a)
 
 t_vec3 vec3_reflect(t_vec3 i, t_vec3 n)
 {
-	//I - 2.0 * dot(N, I) * N
 	return vec3_sub(i, vec3_muls(n, 2 * vec3_dot(n, i)));
 }

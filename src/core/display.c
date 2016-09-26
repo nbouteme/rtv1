@@ -12,22 +12,34 @@
 
 #include <core/core.h>
 
+void init_display(t_display *ret, t_display_interface d)
+{
+	const t_disp_init_f displays[] = {init_xmlx, init_png, init_xmlx_dir};
+
+	displays[d](ret);
+}
+
 t_display *new_display(t_display_init_param params)
 {
 	t_display *ret;
 
 	ret = ft_memalloc(sizeof(*ret));
+	ret->param = params;
 	ret->renderer_driver = get_driver(params.type);
 	ret->user_ptr = params.user_ptr;
 	ret->renderer_driver->param = params;
+	init_display(ret, params.display_type);
 	return (ret);
 }
 
 void run_display(t_display *disp)
 {
-	disp->renderer_driver->init(disp->renderer_driver);
-	disp->renderer_driver->genimage(disp->renderer_driver, disp);
-	disp->renderer_driver->destroy(disp->renderer_driver);
+	if (disp->init)
+		disp->init(disp);
+	while (disp->draw(disp))
+		;
+	if (disp->fini)
+		disp->fini(disp);
 }
 
 t_display *register_display(t_display *d)

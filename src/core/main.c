@@ -38,7 +38,8 @@ int main(int argc, char **argv)
 	display = new_display((t_display_init_param)
 						{
 							1280, 720, 0, 0,
-							MCPU_DRIVER,
+							CUDA_DRIVER,
+							XMLX_DIRECT_DISPLAY,
 							scene
 						});
 	register_display(display);

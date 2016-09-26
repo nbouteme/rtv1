@@ -1,12 +1,15 @@
 #ifndef DRIVER_INTERFACE_H
 # define DRIVER_INTERFACE_H
 
+# include <core/display.h>
 # include <core/core.h>
 
 typedef struct s_driver t_driver;
-typedef void(*t_driver_init)(struct s_driver *self);
-typedef void(*t_driver_genimage)(struct s_driver *self, t_display *disp);
-typedef void(*t_driver_destroy)(struct s_driver *self);
+typedef struct s_display t_display;
+
+typedef void(*t_driver_init)(t_display *self);
+typedef void(*t_driver_genimage)(t_display *disp);
+typedef void(*t_driver_destroy)(t_display *self);
 t_driver *get_driver(t_display_type type);
 
 # ifndef HIDE_DRIVER_DEF

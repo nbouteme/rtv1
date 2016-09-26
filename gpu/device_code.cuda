@@ -1,0 +1,333 @@
+#include "ctypes.hu"
+#include "scene.hu"
+
+__device__ int dbg;
+
+__device__ __host__
+void print_tvec3(const t_cvec3 &v)
+{
+	printf("%f, %f, %f\n", v[0], v[1], v[2]);
+}
+
+__device__
+int solve_second(float a, float b, float c, float &x0, float &x1)
+{
+	float discriminant;
+	float q;
+
+	discriminant = b * b - 4 * a * c;
+	if (discriminant <= 0.001f)
+		return (0);
+	if (discriminant == 0)
+	{
+		x0 = -0.5f * (b / a);
+		x1 = x0;
+	}
+	else
+	{
+		q = b > 0 ?
+			-0.5f * (b + sqrt(discriminant)) :
+			-0.5f * (b - sqrt(discriminant));
+		x0 = q / a;
+		x1 = c / q;
+	}
+	if (x0 > x1)
+	{
+		q = x0;
+		x0 = x1;
+		x1 = q;
+	}
+	return (1);
+}
+
+__device__
+t_cray cgen_ray(t_cvec3 from, t_cvec3 to)
+{
+	return {from, (to - from).normalize()};
+}
+
+__device__
+t_cray cuda_gen_camray(int x, int y, const t_ccamera &cam)
+{
+	return cgen_ray(cam.pos, cam.vpblp + (cam.v * y + cam.u * -x));
+}
+
+__device__
+t_cray transform_ray(const t_cmat4 &transf, const t_cmat3 &norm, const t_cray &in)
+{
+	return {
+		transf * in.pos,
+		norm * in.dir
+	};
+}
+
+__device__
+int intersect(t_primitive &self, const t_cray &from, t_hit_info &info)
+{
+	t_cray from2;
+	int res;
+
+	from2 = transform_ray(self.itransform, self.inorm, from);
+	res = self.intersect(from2, info);
+	if (res)
+	{
+		info.point = self.transform * info.point;
+		info.normal = self.norm * info.normal;
+	}
+	return (res);
+}
+
+__device__
+int cintersect_with_smth(t_cray &from, t_cuda_scene &scene, t_hit_info &hit, float maxdist, t_primitive *&hit_primitive)
+{
+	int i;
+	bool hit_found;
+	t_hit_info back;
+
+	hit_found = false;
+	i = 0;
+	while (i < scene.n_primitives)
+	{
+		back = hit;
+		if (intersect(scene.primitives[i], from, hit))
+		{
+			if (maxdist > hit.dist)
+			{
+				maxdist = hit.dist;
+				hit_found = true;
+				hit_primitive = &scene.primitives[i];
+			}
+			else
+				hit = back;
+		}
+		++i;
+	}
+	return (hit_found);
+}
+
+__device__
+float maxf(float a, float b)
+{
+	return a < b ? b : a;
+}
+
+__device__
+t_cvec3 cuda_color_from_material(t_cuda_scene &scene, t_cray &ray, t_primitive &prim,
+								 t_hit_info &hit, t_cray &shadow_ray, t_cvec3 &light_dir)
+{
+	t_cvec3 diff;
+	t_cvec3 refl;
+	t_cvec3 specv;
+	float coef;
+	float spec;
+
+	coef = hit.normal.dot(shadow_ray.dir);
+	refl = light_dir.reflect(hit.normal).normalize();
+	spec = powf(maxf(ray.dir.dot(refl), 0.0), prim.spec);
+	specv = t_cvec3(spec);
+	coef = coef < 0 ? 0.0 : coef;
+	diff = prim.diffuse * coef;
+	return specv + diff + prim.ambiant;
+}
+
+__device__
+t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
+{
+	int i = 0;
+	t_hit_info hit[2];
+	t_primitive *prim[2] = {0};
+	t_cvec3 out = {{0, 0, 0}};
+	if (!cintersect_with_smth(from, scene, hit[0], 9999, prim[0]))
+		return (out);
+	while (i < scene.n_spots)
+	{
+		hit[1] = hit[0];
+		prim[1] = prim[0];
+		t_cray shadow_ray = cgen_ray(hit[1].point + (hit[1].normal * 0.001f), scene.spots[i].pos);
+		t_cvec3 light_dir = scene.spots[i].pos - hit[1].point;
+		if (cintersect_with_smth(shadow_ray, scene, hit[1], light_dir.norme(), prim[1]))
+			out += prim[0]->ambiant;
+		else
+			out += cuda_color_from_material(scene, from, *prim[0],
+											hit[1], shadow_ray, light_dir);
+		++i;
+	}
+	return out * (1.0f / scene.n_spots);
+}
+
+__host__ __device__
+void cuda_bake_camray(t_ccamera *c)
+{
+	t_cvec3 lap;
+	c->vphw = tan(M_PI / 8);
+	c->vphh = (720.0f / 1280.0f) * c->vphw;
+
+	lap = c->pos + c->dir;
+	c->u = c->up.cross(c->dir);
+	c->v = c->dir.cross(c->u);
+	c->u.normalize();
+	c->v.normalize();
+	c->vpblp = lap - (c->v * c->vphh - c->u * c->vphw);
+	c->v = c->v * (c->vphh * 2.0f / 720.0f);
+	c->u = c->u * (c->vphw * 2.0f / 1280.0f);
+}
+
+#define I2(a, b) a ## b
+#define I(x) I2(x, _cuda_ray_intersectp)
+#define F(x) I2(x, _cuda_ray_intersect)
+
+__device__
+int solve_second(float a, float b, float c, float &x0, float &x1);
+
+__device__
+int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+{
+	const t_cvec3 norm = {{0.0f, 0.0f, -1.0f}};
+
+	float demon = norm.dot(ray.dir);
+	if (demon >= 0)
+		return false;
+	float t = (t_cvec3() - ray.pos).dot(norm) * (1.0f / demon);
+	if (t < 0)
+		return false;
+	hit.point = ray.pos + (ray.dir * t);
+	hit.normal = norm;
+	hit.dist = t;
+	return 1;
+}
+
+__device__
+int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+{
+	t_cvec3 l;
+	float b;
+	float c;
+	float tmp;
+
+	l = ray.pos;
+	b = 2 * ray.dir.dot(l);
+	c = l.dot(l) - 1;
+	if (!solve_second(ray.dir.dot(ray.dir), b, c, b, c))
+		return (0);
+	if (b > c)
+	{
+		tmp = b;
+		b = c;
+		c = tmp;
+	}
+		if (b < 0)
+	{
+		if (c < 0)
+			return (0);
+		b = c;
+	}
+	hit.point = ray.pos + (ray.dir * b);
+	hit.normal = hit.point;
+	hit.dist = b;
+	return (1);
+}
+
+__device__
+int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+{
+	float a, b, c;//, tmp;
+	a = (ray.dir.x * ray.dir.x) + (ray.dir.y * ray.dir.y);
+	b = 2 * ray.pos.x * ray.dir.x + 2 * ray.pos.y * ray.dir.y;
+	c = (ray.pos.x * ray.pos.x) + (ray.pos.y * ray.pos.y) - 1;
+	if (!solve_second(a, b, c, b, c))
+		return (0);
+	if (b > c)
+	{
+		a = b;
+		b = c;
+		c = a;
+	}
+	if (b < 0)
+	{
+		if (c < 0)
+			return (0);
+		b = c;
+	}
+	hit.point = ray.pos + (ray.dir * b);
+	/* TODO: Compute the correct normal  */
+	hit.normal = hit.point;
+	hit.normal.z = 0;
+	hit.normal.normalize();
+	hit.dist = b;
+	return (1);
+}
+
+__device__
+int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+{
+	float a, b, c;
+	a = (ray.dir.x * ray.dir.x) + (ray.dir.y * ray.dir.y) - (ray.dir.z * ray.dir.z);
+	b = 2 * (ray.pos.x * ray.dir.x + ray.pos.y * ray.dir.y - ray.pos.z * ray.dir.z);
+	c = (ray.pos.x * ray.pos.x) + (ray.pos.y * ray.pos.y) - (ray.pos.z * ray.pos.z);
+	if (!solve_second(a, b, c, b, c))
+		return (0);
+	if (b > c)
+	{
+		a = b;
+		b = c;
+		c = a;
+	}
+	if (b <= 0.001f)
+	{
+		if (c <= 0.001f)
+			return (0);
+		b = c;
+	}
+	hit.point = ray.pos + (ray.dir * b);
+	a = 1.0f / sqrtf(2.0f);
+	/* TODO: Compute the correct normal  */
+	hit.normal = hit.point;
+	hit.normal.normalize();
+	hit.normal.z = hit.normal.z > 0 ? -a : a;
+	hit.normal.normalize();
+	hit.dist = b;
+	return (1);
+}
+
+__device__ void *I(plane) = (void*)F(plane);
+__device__ void *I(sphere) = (void*)F(sphere);
+__device__ void *I(cylinder) = (void*)F(cylinder);
+__device__ void *I(cone) = (void*)F(cone);
+
+__device__
+void print_scene(t_cuda_scene &scene)
+{
+	printf("cam at position ");
+	print_tvec3(scene.cam.pos);
+	printf("cam at direc ");
+	print_tvec3(scene.cam.dir);
+	printf("%d primitives\n", scene.n_primitives);
+	printf("%d spots\n", scene.n_spots);
+	printf("%d size in bytes\n", scene.size);
+}
+
+__global__
+void draw_scene(t_cuda_scene &scene)
+{
+	int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    int bw = blockDim.x;
+    int bh = blockDim.y;
+    int x = blockIdx.x * bw + tx;
+    int y = blockIdx.y * bh + ty;
+
+	scene.primitives = (t_primitive*)(((char*)&scene) + sizeof(scene));
+	scene.spots = (t_cspot*)(((char*)scene.primitives) + sizeof(t_primitive) * scene.n_primitives);
+
+	if (x == 640 && y == 360)
+	{
+		print_scene(scene);
+	}
+	
+	t_cray ray = cuda_gen_camray(x, y, scene.cam);
+	//t_cvec3 col = {1,1,1};
+	t_cvec3 col = cuda_color_from_ray(scene, ray);
+	//printf("sphere: %p, prim[0]: %p\n", &sphere_cuda_ray_intersect, scene.primitives[0].intersect);
+	surf2Dwrite(make_float4(col[0], col[1], col[2], 1.0f),
+				surRef, x * sizeof(float4), 719 - y);
+}

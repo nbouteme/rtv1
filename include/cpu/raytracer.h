@@ -24,7 +24,6 @@ void correct_gamma(t_vec3 *framebuffer);
 void bake_camray(t_camera *c);
 t_ray gen_camray(int x, int y, t_camera *c);
 t_vec3 color_from_ray(t_scene *scene, t_ray *from);
-void handle_key(t_xmlx_window *self, int key, int act, int mods);
 float deg2rad(float deg);
 
 
