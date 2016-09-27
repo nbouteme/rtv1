@@ -3,12 +3,6 @@
 
 __device__ int dbg;
 
-__device__ __host__
-void print_tvec3(const t_cvec3 &v)
-{
-	printf("%f, %f, %f\n", v[0], v[1], v[2]);
-}
-
 __device__
 int solve_second(float a, float b, float c, float &x0, float &x1)
 {
@@ -294,16 +288,12 @@ __device__ void *I(sphere) = (void*)F(sphere);
 __device__ void *I(cylinder) = (void*)F(cylinder);
 __device__ void *I(cone) = (void*)F(cone);
 
-__device__
-void print_scene(t_cuda_scene &scene)
+__device__ 
+float conv(float c)
 {
-	printf("cam at position ");
-	print_tvec3(scene.cam.pos);
-	printf("cam at direc ");
-	print_tvec3(scene.cam.dir);
-	printf("%d primitives\n", scene.n_primitives);
-	printf("%d spots\n", scene.n_spots);
-	printf("%d size in bytes\n", scene.size);
+	if (c < 0.0031308f)
+		return 12.92f * c;
+	return (1.055f * powf(c, 0.4166667) - 0.055f);
 }
 
 __global__
@@ -315,19 +305,9 @@ void draw_scene(t_cuda_scene &scene)
     int bh = blockDim.y;
     int x = blockIdx.x * bw + tx;
     int y = blockIdx.y * bh + ty;
-
-	scene.primitives = (t_primitive*)(((char*)&scene) + sizeof(scene));
-	scene.spots = (t_cspot*)(((char*)scene.primitives) + sizeof(t_primitive) * scene.n_primitives);
-
-	if (x == 640 && y == 360)
-	{
-		print_scene(scene);
-	}
 	
 	t_cray ray = cuda_gen_camray(x, y, scene.cam);
-	//t_cvec3 col = {1,1,1};
 	t_cvec3 col = cuda_color_from_ray(scene, ray);
-	//printf("sphere: %p, prim[0]: %p\n", &sphere_cuda_ray_intersect, scene.primitives[0].intersect);
-	surf2Dwrite(make_float4(col[0], col[1], col[2], 1.0f),
-				surRef, x * sizeof(float4), 719 - y);
+	float4 gcol = make_float4(conv(col[0]), conv(col[1]), conv(col[2]), 1.0f);
+	surf2Dwrite(gcol, surRef, x * sizeof(float4), 719 - y);
 }

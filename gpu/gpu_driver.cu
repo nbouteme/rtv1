@@ -3,8 +3,10 @@ extern "C" {
 #include <cuda_runtime_api.h>
 #include <cuda_gl_interop.h>
 #include <cuda/cuda.h>
+#include <xmlx.h>
 }
 
+#include <ctime>
 #include "ctypes.hu"
 #include "scene.hu"
 
@@ -19,12 +21,59 @@ int tex;
 
 #include "device_code.cuda"
 
+void move_camera(cuda_context *cc, int key)
+{
+	t_cvec3 &pos = cc->scene->cam.pos;
+	t_cvec3 &forward = cc->scene->cam.dir;
+	t_cvec3 left = cc->scene->cam.u;
+	left.normalize();
+	t_cvec3 &up = cc->scene->cam.up;
+	if (key == XMLX_KEY_LEFT)
+		pos = pos + left;
+	else if (key == XMLX_KEY_RIGHT)
+		pos = pos - left;
+	else if (key == XMLX_KEY_UP)
+		pos = pos + forward;
+	else if (key == XMLX_KEY_DOWN)
+		pos = pos - forward;
+	else if (key == XMLX_KEY_KP_SUBTRACT)
+		pos = pos + up;
+	else if (key == XMLX_KEY_KP_ADD)
+		pos = pos - up;
+	//cudaMemcpy(cc->gpu_scene, cc->scene, cc->scene->size, cudaMemcpyHostToDevice);
+}
+
+void rotate_camera(cuda_context *cc, double x, double y)
+{
+	static int oldx = 0, oldy = 0;
+	// si le bouton de la souris est enfoncé
+	if(cc->mouse_state[0] == 1)
+	{
+		// calcule la difference d'angle par pixel pour un champs de vision de 45 deg
+		float xangle = 3.141529f / 4 / 1280;
+		float yangle = 3.141529f / 4 / 720;
+
+		t_cvec3 left = cc->scene->cam.u;
+		left.normalize();
+		t_cvec3 &up = cc->scene->cam.up;
+		t_cvec3 &dir = cc->scene->cam.dir;
+
+		dir = rotate(dir, float(y - oldy) * -yangle, left);
+		dir = rotate(dir, float(x - oldx) * xangle, up);
+		up = rotate(up, float(y - oldy) * -yangle, left);
+	}
+	oldx = x, oldy = y;
+}
+
 extern "C"
-void cuda_genimage(t_display *disp)
+int cuda_genimage(t_display *disp)
 {
 	//static int texinit = 0;
 	cuda_context *cc = (cuda_context*)disp->renderer_driver->ctx;
 	cuda_bake_camray(&cc->scene->cam);
+
+	cc->scene->primitives = (t_primitive*)(((char*)cc->gpu_scene) + sizeof(*cc->scene));
+	cc->scene->spots = (t_cspot*)(((char*)cc->scene->primitives) + sizeof(t_primitive) * cc->scene->n_primitives);
 
 	cudaMemcpy(cc->gpu_scene, cc->scene, cc->scene->size, cudaMemcpyHostToDevice);
 	{
@@ -72,6 +121,7 @@ void cuda_genimage(t_display *disp)
 		if (err != cudaSuccess) 
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
+	return 0;
 }
 
 extern "C"
@@ -80,10 +130,20 @@ void cuda_fini(t_driver *driver)
 	cudaDeviceReset();
 }
 
+void set_mouse_state(cuda_context *cc, int button, int act, int mod)
+{
+	(void)mod;
+	cc->mouse_state[button] = act;
+}
+
 extern "C"
 void cuda_init(t_display *disp)
 {
+	disp->key_handler = (t_keyhandle_fun) move_camera;
+	disp->mouse_press_handler = (t_mousehandle_fun)set_mouse_state;
+	disp->mouse_handler = (t_mousehandle_fun)rotate_camera;
 	cuda_context *cc = new cuda_context;
+	cc->mouse_state[0] = 0;
 	tex = (int)(long)disp->disp_param;
 	disp->renderer_driver->ctx = (void*)cc;
 
@@ -91,13 +151,9 @@ void cuda_init(t_display *disp)
 	cudaGLSetGLDevice(0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	cudaGraphicsGLRegisterImage(&vbo_res, tex, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
-	// Par rapport a la scene sur cpu, la scene sur GPU est plate
-	//cc->scene = generate_cscene((t_iscene*)disp->user_ptr);
 	cc->scene = generate_cscene((t_iscene*)disp->user_ptr);
-	printf("SIZE: %d\n", cc->scene->size);
 	cc->gpu_scene = 0;
 	auto e = cudaMalloc(&cc->gpu_scene, 4096);//cc->scene->size);
-	printf("Allocated scene, size: %p, %d\n", cc->gpu_scene, cc->scene->size);
 }
 
 t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base);
@@ -132,7 +188,6 @@ t_cuda_scene *generate_cscene(t_iscene *fn)
 	{
 		new_primitive(&ret->primitives[i], &fn->primitives[i]);
 		ret->primitives[i].intersect = funs[fn->primitives[i].type];
-		printf("assigned %p\n", ret->primitives[i].intersect);
 		++i;
 	}
 	ret->size = sizeof(t_cuda_scene) +

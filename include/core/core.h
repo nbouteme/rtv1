@@ -30,4 +30,13 @@ typedef enum
 # include <core/generator.h>
 # include <core/utils.h>
 
+typedef struct	s_args
+{
+	const char *filename;
+	int driver;
+	int display;
+	int errored;
+}				t_args;
+
+t_args load_args(int ac, char **av);
 #endif

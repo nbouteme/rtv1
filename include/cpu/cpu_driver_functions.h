@@ -6,7 +6,7 @@
 # undef HIDE_DRIVER_DEF
 
 void cpu_init(t_driver *self);
-void cpu_genimage(t_display *disp);
+int cpu_genimage(t_display *disp);
 void cpu_destroy(t_driver *self);
 
 #endif

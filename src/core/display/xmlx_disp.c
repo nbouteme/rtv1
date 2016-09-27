@@ -11,12 +11,38 @@ typedef struct	s_xmlx_disp_data
 
 void handle_key(t_xmlx_window *self, int key, int act, int mods)
 {
-	(void)self;
+	t_display *d;
+
 	(void)act;
 	(void)mods;
 	if (key == XMLX_KEY_ESCAPE)
 		self->stop = true;
-	printf("Received %d: (%c)\n", key, key);
+	d = register_display(0);
+	if (d->key_handler)
+		d->key_handler(d->renderer_driver->ctx, key);
+}
+
+void handle_mouse(t_xmlx_window *self, double x, double y)
+{
+	t_display *d;
+
+	(void)self;
+	d = register_display(0);
+	if (d->mouse_handler)
+		d->mouse_handler(d->renderer_driver->ctx, x, y);
+}
+
+void handle_mouse_button(t_xmlx_window *self, int button, int act, int mod)
+{
+	t_display *d;
+
+	(void)act;
+	(void)mod;
+	(void)self;
+	d = register_display(0);
+	d->mouse_state = button;
+	if (d->mouse_press_handler)
+		d->mouse_press_handler(d->renderer_driver->ctx, button, act, mod);
 }
 
 void init_win_xmlx(t_display *d)
@@ -26,8 +52,10 @@ void init_win_xmlx(t_display *d)
 	disp_int = malloc(sizeof(*disp_int));
 	disp_int->mlx_ptr = xmlx_init();
 	disp_int->win_ptr = xmlx_new_window(d->param.x, d->param.y,
-										"rt", FLOAT);
+										"rt", FLOAT3);
 	disp_int->win_ptr->on_key = handle_key;
+	disp_int->win_ptr->on_mouse_move = handle_mouse;
+	disp_int->win_ptr->on_mouse_button = handle_mouse_button;
 	disp_int->image = disp_int->win_ptr->framebuffer;
 	disp_int->fb = (t_vec3*)disp_int->image->buffer;
 	d->disp_internal = disp_int;
@@ -41,7 +69,7 @@ static void draw_loop_xmlx(t_display *d)
 	t_xmlx_disp_data *dd;
 
 	dd = d->disp_internal;
-	d->renderer_driver->genimage(d);
+	dd->win_ptr->stop |= d->renderer_driver->genimage(d);
 	xmlx_present(dd->win_ptr);
 }
 

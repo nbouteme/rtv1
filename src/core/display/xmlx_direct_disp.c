@@ -13,13 +13,15 @@ void handle_key(t_xmlx_window *self, int key, int act, int mods);
 static int gen_xmlx(t_display *d);
 void close_xmlx(t_display *d);
 static void init_dir_xmlx(t_display *d);
+void handle_mouse_button(t_xmlx_window *self, int button, int act, int mod);
+void handle_mouse(t_xmlx_window *self, double x, double y);
 
 static void draw_loop_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *dd;
 
 	dd = d->disp_internal;
-	d->renderer_driver->genimage(d);
+	dd->win_ptr->stop = d->renderer_driver->genimage(d);
 	xmlx_draw(dd->win_ptr);
 }
 
@@ -41,12 +43,13 @@ void init_dir_xmlx(t_display *d)
 	disp_int = malloc(sizeof(*disp_int));
 	disp_int->mlx_ptr = xmlx_init();
 	disp_int->win_ptr = xmlx_new_window(d->param.x, d->param.y,
-										"rt", FLOAT);
+										"rt", FLOAT4);
 	disp_int->win_ptr->on_key = handle_key;
+	disp_int->win_ptr->on_mouse_move = handle_mouse;
+	disp_int->win_ptr->on_mouse_button = handle_mouse_button;
 	disp_int->image = disp_int->win_ptr->framebuffer;
 	disp_int->fb = (t_vec3*)disp_int->image->buffer;
 	xmlx_present(disp_int->win_ptr);
-	puts("present");
 	d->disp_internal = disp_int;
 	d->disp_param = (void*)(long)disp_int->win_ptr->framebuffer->tex_id;
 	if (d->renderer_driver->init)

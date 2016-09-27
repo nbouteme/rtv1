@@ -15,60 +15,78 @@
 #include <mcpu/mcpu_driver_functions.h>
 #include <cuda/cuda_driver_functions.h>
 
-typedef t_driver *(*t_driver_gen_fun)();
+#ifndef GPU
+# define CUDA_INIT (void*)not_implemented
+# define CUDA_GENIMAGE (void*)not_implemented
+# define CUDA_FINI (void*)not_implemented
+#else
+# define CUDA_INIT cuda_init
+# define CUDA_GENIMAGE cuda_genimage
+# define CUDA_FINI cuda_fini
+#endif
 
-t_driver *build_cpu_driver()
+#ifndef MCPU
+# define MCPU_GENIMAGE (void*)not_implemented
+#else
+# ifndef SRC_CPU
+#  error "This module depends on the CPU module"
+# endif
+# define MCPU_GENIMAGE mcpu_genimage
+#endif
+
+typedef t_driver *(*t_driver_gen_fun)(int);
+
+int not_implemented(void)
+{
+	ft_putendl("This feature isn't implemented in this build");
+	return 1;
+}
+
+t_driver *build_cpu_driver(int type)
 {
 	t_driver *ret;
 
+	if (type == XMLX_DIRECT_DISPLAY)
+		return (0);
 	ret = malloc(sizeof(*ret));
-
 	ret->init = 0;
 	ret->genimage = cpu_genimage;
 	ret->destroy = 0;
 	return (ret);
 }
 
-t_driver *build_mcpu_driver()
+t_driver *build_mcpu_driver(int type)
 {
 	t_driver *ret;
 
+	if (type == XMLX_DIRECT_DISPLAY)
+		return (0);
 	ret = malloc(sizeof(*ret));
-
 	ret->init = 0;
-	ret->genimage = mcpu_genimage;
+	ret->genimage = MCPU_GENIMAGE;
 	ret->destroy = 0;
 	return (ret);
 }
 
-t_driver *build_cuda_driver()
+t_driver *build_cuda_driver(int type)
 {
 	t_driver *ret;
 
+	if (type != XMLX_DIRECT_DISPLAY)
+		return (0);
 	ret = malloc(sizeof(*ret));
-
-	ret->init = cuda_init;
-	ret->genimage = cuda_genimage;
-	ret->destroy = cuda_fini;
+	ret->init = CUDA_INIT;
+	ret->genimage = CUDA_GENIMAGE;
+	ret->destroy = CUDA_FINI;
 	return (ret);
 }
 
-t_driver *get_render_driver(t_display_type type)
+t_driver *get_driver(t_display_type type, t_display_interface i)
 {
 	const t_driver_gen_fun drivers[] = {
 		build_cpu_driver,
 		build_mcpu_driver,
 		build_cuda_driver
 	};
-	return (drivers[type]());
-}
-
-t_driver *get_driver(t_display_type type)
-{
-	const t_driver_gen_fun drivers[] = {
-		build_cpu_driver,
-		build_mcpu_driver,
-		build_cuda_driver
-	};
-	return (drivers[type]());
+	return (drivers[type](i));
 }

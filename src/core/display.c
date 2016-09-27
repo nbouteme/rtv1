@@ -16,6 +16,7 @@ void init_display(t_display *ret, t_display_interface d)
 {
 	const t_disp_init_f displays[] = {init_xmlx, init_png, init_xmlx_dir};
 
+	ret->type = d;
 	displays[d](ret);
 }
 
@@ -25,7 +26,13 @@ t_display *new_display(t_display_init_param params)
 
 	ret = ft_memalloc(sizeof(*ret));
 	ret->param = params;
-	ret->renderer_driver = get_driver(params.type);
+	ret->renderer_driver = get_driver(params.type, params.display_type);
+	if (!ret->renderer_driver)
+	{
+		free(ret);
+		ft_putendl("Specified backend cannot use the specified display mode");
+		return (0);
+	}
 	ret->user_ptr = params.user_ptr;
 	ret->renderer_driver->param = params;
 	init_display(ret, params.display_type);

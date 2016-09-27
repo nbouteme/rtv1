@@ -6,7 +6,7 @@
 # undef HIDE_DRIVER_DEF
 
 void cuda_init(t_display *self);
-void cuda_genimage(t_display *disp);
+int cuda_genimage(t_display *disp);
 void cuda_fini(t_display *self);
 
 #endif

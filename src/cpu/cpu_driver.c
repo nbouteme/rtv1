@@ -136,8 +136,6 @@ void draw_scene(t_vec3 *surface, t_scene *scene)
 		x = 0;
 		while (x < 1280)
 		{
-			if (x == 0 && y == 0)
-				puts("sdf");
 			t_ray from_cam = gen_camray(x, y, &scene->cam);
 			surface[(719 - y) * 1280 + x] = color_from_ray(scene, &from_cam);
 			++x;
@@ -170,19 +168,19 @@ void correct_gamma(t_vec3 *framebuffer)
 			};
 }
 
-void cpu_genimage(t_display *disp)
+int cpu_genimage(t_display *disp)
 {
 	static int done = 0;
 	t_scene *scene;
 
-	if (!done)
-	{
-		scene = generate_scene(disp->user_ptr);
-		draw_scene(disp->disp_param, scene);
-		correct_gamma(disp->disp_param);
-		done = 1;
-		free(scene->primitives);
-		free(scene->spots);
-		free(scene);
-	}
+	if (done)
+		return 0;
+	scene = generate_scene(disp->user_ptr);
+	draw_scene(disp->disp_param, scene);
+	correct_gamma(disp->disp_param);
+	done = 1;
+	free(scene->primitives);
+	free(scene->spots);
+	free(scene);
+	return 0;
 }

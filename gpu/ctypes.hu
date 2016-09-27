@@ -12,6 +12,7 @@ extern "C" {
 #include "t_cvec4.hu"
 #include "t_cmat3.hu"
 #include "t_cmat4.hu"
+#include "rotate.hu"
 
 template<typename T>
 struct t_darray
@@ -88,4 +89,5 @@ struct cuda_context
 {
 	t_cuda_scene *scene;
 	t_cuda_scene *gpu_scene;
+	int mouse_state[2];
 };

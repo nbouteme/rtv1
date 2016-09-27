@@ -42,6 +42,9 @@ typedef struct	s_display
 	t_display_init_fun		fini;
 	t_keyhandle_fun			key_handler;
 	t_mousehandle_fun		mouse_handler;
+	t_mousehandle_fun		mouse_press_handler;
+	int						mouse_state;
+	int						type;
 	t_driver				*renderer_driver;
 	void					*user_ptr;
 	void					*disp_param;

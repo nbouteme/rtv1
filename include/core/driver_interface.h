@@ -8,9 +8,9 @@ typedef struct s_driver t_driver;
 typedef struct s_display t_display;
 
 typedef void(*t_driver_init)(t_display *self);
-typedef void(*t_driver_genimage)(t_display *disp);
+typedef int(*t_driver_genimage)(t_display *disp);
 typedef void(*t_driver_destroy)(t_display *self);
-t_driver *get_driver(t_display_type type);
+t_driver *get_driver(t_display_type type, t_display_interface dt);
 
 # ifndef HIDE_DRIVER_DEF
 

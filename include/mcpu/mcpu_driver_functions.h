@@ -10,7 +10,7 @@
 # endif
 
 void mcpu_init(t_driver *self);
-void mcpu_genimage(t_display *disp);
+int mcpu_genimage(t_display *disp);
 void mcpu_destroy(t_driver *self);
 
 #endif
