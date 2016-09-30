@@ -1,6 +1,21 @@
 #include "ctypes.hu"
 #include "scene.hu"
 
+
+
+__device__
+void print_vec3(const t_cvec3 &col)
+{
+	printf("{%f, %f, %f}\n", col.v[0], col.v[1], col.v[2]);
+}
+
+__device__
+void print_ray(const t_cray &ray)
+{
+	printf("{%f, %f, %f}, {%f, %f, %f}\n", ray.pos.v[0], ray.pos.v[1], ray.pos.v[2],
+		   ray.dir.v[0], ray.dir.v[1], ray.dir.v[2]);
+}
+
 __device__ int dbg;
 
 __device__
@@ -131,8 +146,10 @@ t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
 	t_hit_info hit[2];
 	t_primitive *prim[2] = {0};
 	t_cvec3 out = {{0, 0, 0}};
+
 	if (!cintersect_with_smth(from, scene, hit[0], 9999, prim[0]))
 		return (out);
+
 	while (i < scene.n_spots)
 	{
 		hit[1] = hit[0];
@@ -228,6 +245,7 @@ int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 	a = (ray.dir.x * ray.dir.x) + (ray.dir.y * ray.dir.y);
 	b = 2 * ray.pos.x * ray.dir.x + 2 * ray.pos.y * ray.dir.y;
 	c = (ray.pos.x * ray.pos.x) + (ray.pos.y * ray.pos.y) - 1;
+
 	if (!solve_second(a, b, c, b, c))
 		return (0);
 	if (b > c)
@@ -243,7 +261,6 @@ int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 		b = c;
 	}
 	hit.point = ray.pos + (ray.dir * b);
-	/* TODO: Compute the correct normal  */
 	hit.normal = hit.point;
 	hit.normal.z = 0;
 	hit.normal.normalize();
@@ -299,15 +316,12 @@ float conv(float c)
 __global__
 void draw_scene(t_cuda_scene &scene)
 {
-	int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    int bw = blockDim.x;
-    int bh = blockDim.y;
-    int x = blockIdx.x * bw + tx;
-    int y = blockIdx.y * bh + ty;
-	
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
 	t_cray ray = cuda_gen_camray(x, y, scene.cam);
 	t_cvec3 col = cuda_color_from_ray(scene, ray);
+	
 	float4 gcol = make_float4(conv(col[0]), conv(col[1]), conv(col[2]), 1.0f);
 	surf2Dwrite(gcol, surRef, x * sizeof(float4), 719 - y);
 }

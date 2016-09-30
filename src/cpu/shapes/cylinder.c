@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:46:31 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/14 03:07:15 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/30 12:20:53 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ bool cylinder_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 {
 	(void)base;
 	float a, b, c;//, tmp;
+
 	a = (ray->dir.s.x * ray->dir.s.x) + (ray->dir.s.y * ray->dir.s.y);
 	b = 2 * ray->pos.s.x * ray->dir.s.x + 2 * ray->pos.s.y * ray->dir.s.y;
 	c = (ray->pos.s.x * ray->pos.s.x) + (ray->pos.s.y * ray->pos.s.y) - 1;
@@ -37,7 +38,6 @@ bool cylinder_ray_intersect(t_primitive *base, t_ray *ray, t_hit_info *out)
 	/* TODO: Compute the correct normal  */
 	out->normal = out->point;
 	out->normal.s.z = 0;
-	vec3_norme(out->normal);
 	out->dist = b;
 	return (1);
 }

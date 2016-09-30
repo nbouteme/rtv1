@@ -6,11 +6,14 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/11 03:56:56 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/30 12:20:42 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cpu/cpu.h>
+
+void print_ray(t_ray *r);
+void print_vec3(t_vec3 *v);
 
 t_ray transform_ray(t_mat4 transf, t_mat3 norm, t_ray *in)
 {

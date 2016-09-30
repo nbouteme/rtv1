@@ -25,7 +25,7 @@ int gen_png(t_display *d)
 	i = 0;
 	while (i < size)
 	{
-		pixbuf[i] = ((float*)d->disp_param)[i] * 255;
+		pixbuf[i] = ((((float*)d->disp_param)[i] >= 1.0f ? 1.0f : ((float*)d->disp_param)[i]) * 255.0f);
 		++i;
 	}
 	image = to_png(1280, 720, pixbuf, size, &size);

@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/09/19 03:36:49 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/09/30 12:22:36 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,16 @@
 #include <cpu/cpu.h>
 #include <cpu/cpu_driver.h>
 
+void print_vec3(t_vec3 *v)
+{
+	printf("{%f, %f, %f}\n", v->v[0], v->v[1], v->v[2]);
+}
+
 int intersect_with_smth(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 {
 	int i;
 	bool hit_found;
 	t_hit_info back;
-
 
 	hit_found = false;
 	i = 0;
@@ -48,6 +52,7 @@ t_ray gen_ray(t_vec3 from, t_vec3 to);
 void bake_camray(t_camera *c)
 {
 	t_vec3 lap;
+
 	c->vphw = tan(M_PI / 8);
 	c->vphh = (720.0f / 1280.0f) * c->vphw;
 	lap = vec3_add(c->pos, c->dir);
@@ -98,7 +103,6 @@ t_vec3 color_from_material(t_colargs *args)
 	diff = vec3_muls(args->prim->diffuse, coef);
 	return vec3_add(vec3_add(specv, diff), args->prim->ambiant);
 }
-
 t_vec3 color_from_ray(t_scene *scene, t_ray *from)
 {
 	int i = 0;

@@ -1,4 +1,3 @@
-#include <byteswap.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/fcntl.h>
@@ -12,11 +11,19 @@ typedef struct
 	char data[];
 } png_chunk;
 
-typedef struct 
+typedef struct
 {
 	int size;
 	unsigned char data[];
 } size_pair;
+
+unsigned bswap_32(unsigned n)
+{
+	return (((n >> 24) & 0x000000FFu) |
+			((n >>  8) & 0x0000FF00u) |
+			((n <<  8) & 0x00FF0000u) |
+			((n << 24) & 0xFF000000u));
+}
 
 unsigned adler32(unsigned char *data, size_t len)
 {
@@ -32,7 +39,7 @@ unsigned adler32(unsigned char *data, size_t len)
         a = (a + data[index]) % 65521;
         b = (b + a) % 65521;
 		++index;
-    }    
+    }
     return (b << 16) | a;
 }
 
@@ -64,11 +71,11 @@ png_chunk *make_chunk(char type[4], void *data, int size, int *osize)
 {
 	*osize = sizeof(png_chunk) + size + 4;
 	png_chunk *ret = malloc(*osize);
-	ret->length = __bswap_32(size);
+	ret->length = bswap_32(size);
 	memcpy(ret->magic, type, 4);
 	memcpy(ret->data, data, size);
 	unsigned *crcp = (void*)&((char*)ret->data)[size];
-	*crcp = __bswap_32(crc32((void*)&ret->magic, size + 4));
+	*crcp = bswap_32(crc32((void*)&ret->magic, size + 4));
 	return ret;
 }
 
@@ -128,7 +135,7 @@ void *zlib_stream(void *data, int s, int *osize)
 	memcpy(kek[2], "\x78\x01", 2);
 	memcpy(&kek[2][2], kek[0], os);
 	free(kek[0]);
-	*(unsigned*)&kek[2][2 + os] = __bswap_32(adler32(data, s));
+	*(unsigned*)&kek[2][2 + os] = bswap_32(adler32(data, s));
 	return kek[2];
 }
 
@@ -139,8 +146,8 @@ png_chunk *png_ihdr(int w, int h, int *osize)
 
 	memset(data, 0, sizeof(data));
 	d = (void*)data;
-	d[0] = __bswap_32(w);
-	d[1] = __bswap_32(h);
+	d[0] = bswap_32(w);
+	d[1] = bswap_32(h);
 	data[8] = 8;
 	data[9] = 2;
 	return make_chunk("IHDR", data, sizeof(data), osize);

@@ -17,7 +17,13 @@ endif
 ifneq ($(filter gpu,$(MODULES)),)
 
 #TODO: check system
+
+ifeq (($shell uname),Darwin)
 CUDA_LIBS = /opt/cuda/lib64
+else
+CUDA_LIBS = /Developer/NVIDIA/CUDA-7.5/lib
+LFLAGS += -Wl,-rpath,$(CUDA_LIBS)
+endif
 
 gpu_CC := nvcc
 gpu_CFLAGS = -g --std=c++11 -ccbin g++ -m64 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 $(addprefix -I,$(INCLUDE_DIRS_ACC))
