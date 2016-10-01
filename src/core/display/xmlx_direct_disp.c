@@ -1,22 +1,18 @@
-#include <core/core.h>
-#include <xmlx.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   xmlx_direct_disp.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2016/10/01 11:17:39 by nbouteme          #+#    #+#             */
+/*   Updated: 2016/10/01 12:25:10 by nbouteme         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-typedef struct	s_xmlx_disp_data
-{
-	t_mlx_ctx *mlx_ptr;
-	t_xmlx_window *win_ptr;
-	t_image *image;
-	t_vec3 *fb;
-}				t_xmlx_disp_data;
+#include "xmlx_direct_disp.h"
 
-void handle_key(t_xmlx_window *self, int key, int act, int mods);
-static int gen_xmlx(t_display *d);
-void close_xmlx(t_display *d);
-static void init_dir_xmlx(t_display *d);
-void handle_mouse_button(t_xmlx_window *self, int button, int act, int mod);
-void handle_mouse(t_xmlx_window *self, double x, double y);
-
-static void draw_loop_xmlx(t_display *d)
+static void	draw_loop_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *dd;
 
@@ -25,18 +21,18 @@ static void draw_loop_xmlx(t_display *d)
 	xmlx_draw(dd->win_ptr);
 }
 
-static int gen_xmlx(t_display *d)
+static int	gen_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *dd;
 
 	dd = d->disp_internal;
 	if (dd->win_ptr->stop)
-		return false;
+		return (false);
 	xmlx_run_window(dd->win_ptr, draw_loop_xmlx, d);
-	return true;
+	return (true);
 }
 
-void init_dir_xmlx(t_display *d)
+void		init_dir_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *disp_int;
 
@@ -56,7 +52,7 @@ void init_dir_xmlx(t_display *d)
 		d->renderer_driver->init(d);
 }
 
-void init_xmlx_dir(t_display *d)
+void		init_xmlx_dir(t_display *d)
 {
 	d->init = init_dir_xmlx;
 	d->draw = gen_xmlx;

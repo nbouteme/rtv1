@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   scene.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2016/10/01 10:50:49 by nbouteme          #+#    #+#             */
+/*   Updated: 2016/10/01 10:51:11 by nbouteme         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef SCENE_H
 # define SCENE_H
 
@@ -18,13 +30,13 @@ typedef struct	s_camera
 
 typedef struct	s_scene
 {
-	t_camera cam;
-	int n_primitives;
-	int n_spots;
-	t_primitive *primitives;
-	t_spot *spots;
+	t_camera	cam;
+	int			n_primitives;
+	int			n_spots;
+	t_primitive	*primitives;
+	t_spot		*spots;
 }				t_scene;
 
-t_scene *generate_scene(t_iscene *iscene);
+t_scene			*generate_scene(t_iscene *iscene);
 
 #endif

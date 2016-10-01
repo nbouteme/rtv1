@@ -6,13 +6,13 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/24 02:32:15 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/09/19 03:36:52 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 12:43:40 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cpu/math/equation.h>
 
-int solve_second(t_sec_equation *eq)
+int	solve_second(t_sec_equation *eq)
 {
 	float discriminant;
 	float q;
@@ -33,11 +33,14 @@ int solve_second(t_sec_equation *eq)
 		*eq->x0 = q / eq->a;
 		*eq->x1 = eq->c / q;
 	}
-	if (*eq->x0 > *eq->x1)
-	{
-		q = *eq->x0;
-		*eq->x0 = *eq->x1;
-		*eq->x1 = q;
-	}
 	return (1);
 }
+
+/*
+**if (*eq->x0 > *eq->x1)
+**{
+**q = *eq->x0;
+***eq->x0 = *eq->x1;
+***eq->x1 = q;
+**}
+*/

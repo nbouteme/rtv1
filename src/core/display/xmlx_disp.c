@@ -1,51 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   xmlx_disp.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2016/10/01 11:18:36 by nbouteme          #+#    #+#             */
+/*   Updated: 2016/10/01 11:20:28 by nbouteme         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <core/core.h>
 #include <xmlx.h>
+#include "xmlx_direct_disp.h"
 
-typedef struct	s_xmlx_disp_data
-{
-	t_mlx_ctx *mlx_ptr;
-	t_xmlx_window *win_ptr;
-	t_image *image;
-	t_vec3 *fb;
-}				t_xmlx_disp_data;
-
-void handle_key(t_xmlx_window *self, int key, int act, int mods)
-{
-	t_display *d;
-
-	(void)act;
-	(void)mods;
-	if (key == XMLX_KEY_ESCAPE)
-		self->stop = true;
-	d = register_display(0);
-	if (d->key_handler)
-		d->key_handler(d->renderer_driver->ctx, key);
-}
-
-void handle_mouse(t_xmlx_window *self, double x, double y)
-{
-	t_display *d;
-
-	(void)self;
-	d = register_display(0);
-	if (d->mouse_handler)
-		d->mouse_handler(d->renderer_driver->ctx, x, y);
-}
-
-void handle_mouse_button(t_xmlx_window *self, int button, int act, int mod)
-{
-	t_display *d;
-
-	(void)act;
-	(void)mod;
-	(void)self;
-	d = register_display(0);
-	d->mouse_state = button;
-	if (d->mouse_press_handler)
-		d->mouse_press_handler(d->renderer_driver->ctx, button, act, mod);
-}
-
-void init_win_xmlx(t_display *d)
+void		init_win_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *disp_int;
 
@@ -64,7 +33,7 @@ void init_win_xmlx(t_display *d)
 		d->renderer_driver->init(d);
 }
 
-static void draw_loop_xmlx(t_display *d)
+static void	draw_loop_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *dd;
 
@@ -73,25 +42,25 @@ static void draw_loop_xmlx(t_display *d)
 	xmlx_present(dd->win_ptr);
 }
 
-int gen_xmlx(t_display *d)
+int			gen_xmlx(t_display *d)
 {
 	t_xmlx_disp_data *dd;
 
 	dd = d->disp_internal;
 	if (dd->win_ptr->stop)
-		return false;
+		return (false);
 	xmlx_run_window(dd->win_ptr, draw_loop_xmlx, d);
-	return true;
+	return (true);
 }
 
-void close_xmlx(t_display *d)
+void		close_xmlx(t_display *d)
 {
 	if (d->renderer_driver->destroy)
 		d->renderer_driver->destroy(d);
 	xmlx_destroy();
 }
 
-void init_xmlx(t_display *d)
+void		init_xmlx(t_display *d)
 {
 	d->init = init_win_xmlx;
 	d->draw = gen_xmlx;

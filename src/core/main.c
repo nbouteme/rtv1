@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 22:10:35 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/09/19 03:30:44 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 12:24:09 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,53 +14,67 @@
 #include <core/core.h>
 #include <unistd.h>
 
-void usage()
+void	usage(void)
 {
 	ft_putstr("Usage: ./rtv1 [scene file] (-{c|g|m}) (-{p|x|d})\n");
-	ft_putstr("c: CPU renderer (Default)\ng: GPU renderer (CUDA)\nm: Multi-threaded "
-			  "CPU renderer\n");
+	ft_putstr("c: CPU renderer (Default)\ng: GPU renderer (CUDA)\nm: "
+			"Multi-threaded CPU renderer\n");
 	ft_putstr("-x: Display in a window (Default)\n");
+	ft_putstr("-d: Display in a cuda window (required for gpu renderer)\n");
 	ft_putstr("-p: Write PNG file to stdout\n");
 	exit(1);
 }
 
-t_args load_args(int ac, char **av)
+#define S(x) [x]
+
+void	handle_single_arg(char *arg, t_args *ret, const char *vals)
 {
-	const char drivers[256] = {['c'] = CPU_DRIVER, ['g'] = CUDA_DRIVER,
-							['m'] = MCPU_DRIVER};
-	const char display[256] = {['d'] = XMLX_DIRECT_DISPLAY, ['p'] = PNG_DISPLAY,
-							['x'] = XMLX_DISPLAY};
-	t_args ret;
+	ret->errored |= arg[1] == 0;
+	if (ret->errored)
+		return ;
+	if (*arg == '-')
+	{
+		if (arg[2] || !ft_strchr("cdgpmx", arg[1]))
+			ret->errored = 1;
+		if (arg[1] == 'c' || arg[1] == 'g' || arg[1] == 'm')
+			ret->driver = vals[(unsigned)arg[1]];
+		if (arg[1] == 'd' || arg[1] == 'p' || arg[1] == 'x')
+			ret->display = vals[(unsigned)arg[1]];
+	}
+	else
+		ret->filename = arg;
+}
+
+t_args	load_args(int ac, char **av)
+{
+	const char	valuess[256] = {S('c') = CPU_DRIVER,
+								S('g') = CUDA_DRIVER,
+								S('m') = MCPU_DRIVER,
+								S('d') = XMLX_DIRECT_DISPLAY,
+								S('p') = PNG_DISPLAY,
+								S('x') = XMLX_DISPLAY};
+	t_args		ret;
 
 	ft_memset(&ret, ac * 0, sizeof(ret));
 	ret.driver = CPU_DRIVER;
 	ret.display = XMLX_DISPLAY;
 	while (*++av)
-	{
-		if (*av[0] == '-')
-		{
-			if (av[0][2] || !ft_strchr("cdgpmx", av[0][1]))
-				ret.errored = 1;
-			if (av[0][1] == 'c' || av[0][1] == 'g' || av[0][1] == 'm')
-				ret.driver = drivers[(unsigned)av[0][1]];
-			if (av[0][1] == 'd' || av[0][1] == 'p' || av[0][1] == 'x')
-				ret.display = display[(unsigned)av[0][1]];
-		}
-		else
-			ret.filename = *av;
-	}
+		handle_single_arg(av[0], &ret, valuess);
 	ret.errored |= ret.display == -1 || ret.driver == -1 || !ret.filename;
-	return ret;
+	return (ret);
 }
 
-int main(int argc, char **argv)
+#undef S
+
+int		main(int argc, char **argv)
 {
-	t_iscene *scene;
-	t_display *display;
+	t_iscene	*scene;
+	t_display	*display;
+	t_args		args;
 
 	if (argc <= 1)
 		return (0);
-	t_args args = load_args(argc, argv);
+	args = load_args(argc, argv);
 	if (args.errored || !(scene = load_iscene(args.filename)))
 	{
 		ft_putstr("Error detected, stopping...\n");
@@ -68,12 +82,7 @@ int main(int argc, char **argv)
 		return (1);
 	}
 	display = new_display((t_display_init_param)
-						{
-							1280, 720, 0, 0,
-							args.driver,
-							args.display,
-							scene
-						});
+						{1280, 720, 0, 0, args.driver, args.display, scene});
 	if (display)
 	{
 		register_display(display);
@@ -82,5 +91,5 @@ int main(int argc, char **argv)
 	free(scene->spots);
 	free(scene->primitives);
 	free(scene);
-	return 0;
+	return (0);
 }

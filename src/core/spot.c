@@ -6,13 +6,13 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/23 02:08:23 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 02:10:15 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 11:59:03 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <core/core.h>
 
-t_spot *new_spot(t_spot *self, t_vec3 pos)
+t_spot	*new_spot(t_spot *self, t_vec3 pos)
 {
 	self->pos = pos;
 	return (self);

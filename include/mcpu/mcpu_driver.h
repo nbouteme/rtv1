@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:28:54 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/24 04:46:28 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 10:59:07 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@
 
 typedef struct	s_cpudri_data
 {
-	t_mlx_ctx *mlx_ptr;
-	t_xmlx_window *win_ptr;
-	t_image *image;
-	t_vec3 *fb;
+	t_mlx_ctx		*mlx_ptr;
+	t_xmlx_window	*win_ptr;
+	t_image			*image;
+	t_vec3			*fb;
 }				t_cpudri_data;
 
 typedef struct	s_driver
@@ -38,9 +38,9 @@ typedef struct	s_driver
 
 typedef struct	s_hit_info
 {
-	t_vec3 point;
-	t_vec3 normal;
-	float dist;
+	t_vec3		point;
+	t_vec3		normal;
+	float		dist;
 }				t_hit_info;
 
 #endif

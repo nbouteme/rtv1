@@ -6,13 +6,13 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:32:13 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/07/23 02:51:05 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 11:13:48 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <core/core.h>
 
-void init_display(t_display *ret, t_display_interface d)
+void		init_display(t_display *ret, t_display_interface d)
 {
 	const t_disp_init_f displays[] = {init_xmlx, init_png, init_xmlx_dir};
 
@@ -20,7 +20,7 @@ void init_display(t_display *ret, t_display_interface d)
 	displays[d](ret);
 }
 
-t_display *new_display(t_display_init_param params)
+t_display	*new_display(t_display_init_param params)
 {
 	t_display *ret;
 
@@ -39,7 +39,7 @@ t_display *new_display(t_display_init_param params)
 	return (ret);
 }
 
-void run_display(t_display *disp)
+void		run_display(t_display *disp)
 {
 	if (disp->init)
 		disp->init(disp);
@@ -49,7 +49,7 @@ void run_display(t_display *disp)
 		disp->fini(disp);
 }
 
-t_display *register_display(t_display *d)
+t_display	*register_display(t_display *d)
 {
 	static t_display *display = 0;
 
@@ -58,9 +58,11 @@ t_display *register_display(t_display *d)
 	return (display);
 }
 
-void end_application()
+void		end_application(void)
 {
-	t_display *display = register_display(0);
+	t_display *display;
+
+	display = register_display(0);
 	(void)display;
 	exit(1);
 }

@@ -6,32 +6,29 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:30 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/08/14 03:46:50 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/01 13:21:33 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cpu/cpu.h>
 #include <core/iscene.h>
 
-float deg2rad(float deg)
+float	deg2rad(float deg)
 {
 	const float tran = 180.0f / M_PI;
 
-	return deg / tran;
+	return (deg / tran);
 }
-
-extern float angle;
-
 
 #define I2(a, b) a ## b
 #define I(x) I2(x, _ray_intersect)
 
-t_scene *generate_scene(t_iscene *fn)
+t_scene	*generate_scene(t_iscene *fn)
 {
-	const t_ray_intersect_fun funs[] = {I(plane), I(sphere),
+	const t_ray_intersect_fun	funs[] = {I(plane), I(sphere),
 										I(cone), I(cylinder)};
-	t_scene *ret;
-	int i;
+	t_scene						*ret;
+	int							i;
 
 	i = 0;
 	ret = ft_memalloc(sizeof(*ret));
