@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 13:54:08 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:14:56 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/27 23:53:29 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void		*zlib_stream(void *data, int s, int *osize)
 
 	os = 0;
 	seg = make_arr(data, s, 0xffff);
-	memset(kek, 0, sizeof(kek));
+	ft_memset(kek, 0, sizeof(kek));
 	kek[2] = (void*)seg;
 	while (*seg)
 	{
@@ -43,8 +43,8 @@ void		*zlib_stream(void *data, int s, int *osize)
 	free(kek[2]);
 	*osize = 2 + os + 4;
 	kek[2] = malloc(*osize);
-	memcpy(kek[2], "\x78\x01", 2);
-	memcpy(&kek[2][2], kek[0], os);
+	ft_memcpy(kek[2], "\x78\x01", 2);
+	ft_memcpy(&kek[2][2], kek[0], os);
 	free(kek[0]);
 	*(unsigned*)&kek[2][2 + os] = bswap_32(adler32(data, s));
 	return (kek[2]);

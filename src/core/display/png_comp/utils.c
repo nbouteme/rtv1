@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 14:00:45 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:18:57 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/27 23:54:29 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,8 @@ t_png_chunk	*make_chunk(char type[4], void *data, int size, int *osize)
 	*osize = sizeof(t_png_chunk) + size + 4;
 	ret = malloc(*osize);
 	ret->length = bswap_32(size);
-	memcpy(ret->magic, type, 4);
-	memcpy(ret->data, data, size);
+	ft_memcpy(ret->magic, type, 4);
+	ft_memcpy(ret->data, data, size);
 	crcp = (void*)&((char*)ret->data)[size];
 	*crcp = bswap_32(crc32((void*)&ret->magic, size + 4));
 	return (ret);

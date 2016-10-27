@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:53:58 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 11:54:06 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/27 23:51:42 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ t_ast			*find_aa_with_name(t_ast *root, const char *name)
 	i = 0;
 	if (!root)
 		return (0);
-	if (strstr(root->tag, "|assoc_array") && (ret = get_value(root, "name"))
+	if (ft_strstr(root->tag, "|assoc_array") && (ret = get_value(root, "name"))
 	&& ft_strstr(ret->tag, "|string") && ft_strcmp(name, ret->value) == 0)
 		return (ret);
 	while (i < root->n_children)

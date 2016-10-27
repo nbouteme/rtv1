@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:54:29 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 11:54:49 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/27 23:52:08 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ t_generror		*gen_scalar(float *a, t_ast *elem)
 {
 	int n;
 
-	if (!strstr(elem->tag, "|int") && !strstr(elem->tag, "|float"))
+	if (!ft_strstr(elem->tag, "|int") && !ft_strstr(elem->tag, "|float"))
 		return (new_gerror(elem, "Expected scalable type, got: ", elem->tag));
-	if (strstr(elem->tag, "|int"))
+	if (ft_strstr(elem->tag, "|int"))
 		*a = ft_atoi(elem->value);
 	else
 	{
@@ -59,7 +59,7 @@ t_generror		*gen_type(t_prim_type *ret, t_ast *elem)
 	const char	*types[] = {"plane", "sphere", "cone", "cylinder", 0};
 	int			i;
 
-	if (!strstr(elem->tag, "|string"))
+	if (!ft_strstr(elem->tag, "|string"))
 		return (new_gerror(elem, "Expected string type, got: ", elem->tag));
 	i = str_arr_find(types, elem->value);
 	if (i == -1)

@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/23 04:45:22 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 13:06:37 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/27 23:53:51 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ t_vec3	mat_multv3(t_mat3 a, t_vec3 x)
 	int		i;
 	int		j;
 
-	memset(ret.v, 0, sizeof(ret.v));
+	ft_memset(ret.v, 0, sizeof(ret.v));
 	i = 0;
 	while (i < 3)
 	{

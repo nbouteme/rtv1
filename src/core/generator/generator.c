@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:22:11 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 11:54:47 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/28 00:09:42 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ t_generror		*gen_sink(t_iscene *ret, t_ast *sink, t_ast *root)
 	const char		*sinks[] = {"camera", "spots", "prims", 0};
 	const t_sgen	sinkf[] = {&ukwn_sink, &gen_camera, &gen_spot, &gen_prim};
 
-	if (!strstr(sink->tag, "|sink"))
+	if (!ft_strstr(sink->tag, "|sink"))
 		return (new_gerror(sink, "Not a sink: ", sink->value));
 	return (sinkf[str_arr_find(sinks, sink->children[0]->value) + 1](ret,
 																	sink,
@@ -105,9 +105,14 @@ t_iscene		*gen_iscene(t_ast *parsed, const char *input)
 	t_generror	*e;
 	int			i;
 
+	if (parsed->n_children >= 10)
+	{
+		ft_putendl("Scene contains too many objects. (Limit: 8)");
+		return (0);
+	}
 	ret = ft_memalloc(sizeof(*ret));
-	i = 0;
-	while (i < parsed->n_children)
+	i = 1;
+	while (i < parsed->n_children - 1)
 		if ((e = gen_sink(ret, parsed->children[i++], parsed)))
 		{
 			print_gerror(e, input);
