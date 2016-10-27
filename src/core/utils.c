@@ -29,7 +29,7 @@ void	*from_file(const char *fn, unsigned long *size, t_check_fun chk)
 	{
 		r = read(fd, buff + *size, 512);
 		*size += r;
-		if (!chk(buff + *size, r))
+		if (!chk(buff + *size, r, *size))
 		{
 			free(buff);
 			return (0);

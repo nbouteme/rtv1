@@ -64,7 +64,8 @@ t_generror		*gen_prim(t_iscene *ret, t_ast *sink, t_ast *r)
 	void	*tmp;
 
 	tmp = ret->primitives;
-	ret->primitives = malloc(sizeof(t_iprimitive) * (ret->n_primitives + 1));
+	ret->primitives = ft_memalloc(sizeof(t_iprimitive) *
+								(ret->n_primitives + 1));
 	ft_memcpy(ret->primitives, tmp, sizeof(t_iprimitive) * ret->n_primitives);
 	free(tmp);
 	pos = eval_ref(r, get_value(sink->children[2], "type"));

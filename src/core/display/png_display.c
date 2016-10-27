@@ -27,7 +27,7 @@ int		gen_png(t_display *d)
 	int		size;
 	void	*image;
 	int		i;
-	char	*pixbuf;
+	t_u8	*pixbuf;
 
 	d->renderer_driver->genimage(d);
 	size = 3 * 1280 * 720;
@@ -35,13 +35,13 @@ int		gen_png(t_display *d)
 	i = 0;
 	while (i < size)
 	{
-		float f = ((float*)d->disp_param)[i] >= 1.0f ? 1.0f : ((float*)d->disp_param)[i];
-		pixbuf[i] = f * 255.0f;
+		pixbuf[i] = ((((float*)d->disp_param)[i]) >= 1.0f ? 1.0f :
+					(((float*)d->disp_param)[i])) * 255.0f;
 		++i;
 	}
-//	image = to_png((t_png_conv_p){1280, 720, pixbuf, size, &size});
-	image = pixbuf;
+	image = to_png((t_png_conv_p){1280, 720, pixbuf, size, &size});
 	write(1, image, size);
+	free(image);
 	close(1);
 	return (false);
 }

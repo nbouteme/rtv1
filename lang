@@ -1,10 +1,1 @@
-file		:= <sink> (<sink>)*;
-sink		:= <name> "<-" <assoc_array>;
-assoc_array	:= '{' <pair> (',' <pair>)* '}';
-pair		:= <key> ':' <value>;
-key		:= <string>;
-array		:= '[' <value> (',' <value>)* ']';
-int		:= /-?(0|1|2|3|4|5|6|7|8|9)+/;
-float		:= <int> ( '.' /(0|1|2|3|4|5|6|7|8|9)+/ )?;
-ref		:= <string> '.' <string>;
-value		:= <assoc_array> | <array> | <float> | <int> | <ref> | <string>;
+array := /^/ 'a' 'a'* /$/;

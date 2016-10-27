@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <core/core.h>
+#include "lang.h"
 
 t_iscene	*load_iscene(const char *fn)
 {
@@ -20,9 +21,9 @@ t_iscene	*load_iscene(const char *fn)
 	t_parser		*p;
 
 	buf[0] = from_file(fn, &size, scene_file_check);
-	buf[1] = from_file("lang", &size, scene_file_check);
+	buf[1] = from_file("lang", &size, scene_file_check);//LANG;
 	l = lang_parser(buf[1]);
-	p = get_parser(l, "file");
+	p = get_parser(l, "array");
 	buf[3] = 0;
 	if (!run_parser(p, buf[0], &buf[2]))
 	{
@@ -37,13 +38,18 @@ t_iscene	*load_iscene(const char *fn)
 	}
 	delete_langparser(l);
 	free(buf[0]);
-	free(buf[1]);
+	exit(1);
 	return (buf[3]);
 }
 
-int			scene_file_check(char *buf, int s)
+int			scene_file_check(char *buf, int s, unsigned long tsize)
 {
 	(void)buf;
 	(void)s;
+	if (tsize > 4096)
+	{
+		ft_putendl_fd("File too big.", 2);
+		return (0);
+	}
 	return (1);
 }

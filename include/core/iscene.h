@@ -58,7 +58,7 @@ typedef struct	s_iscene
 	t_spot			*spots;
 }				t_iscene;
 
-int				scene_file_check(char *s, int size);
+int				scene_file_check(char *s, int size, unsigned long tsize);
 t_iscene		*load_iscene(const char *fn);
 
 #endif

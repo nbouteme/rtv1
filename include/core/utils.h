@@ -13,7 +13,7 @@
 #ifndef UTILS_H
 # define UTILS_H
 
-typedef int	(*t_check_fun)(char *s, int size);
+typedef int	(*t_check_fun)(char *s, int size, unsigned long tsize);
 void		*from_file(const char *fn, unsigned long *size, t_check_fun check);
 
 #endif

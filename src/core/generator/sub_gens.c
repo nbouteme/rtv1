@@ -28,6 +28,8 @@ t_generror		*gen_scalar(float *a, t_ast *elem)
 			pow(10, ft_strlen(elem->children[2]->value));
 		*a = n ? -*a : *a;
 	}
+	if (*a <= -10000.0f || *a >= 10000.0f)
+		return (new_gerror(elem, "Value out of range: ", elem->tag));
 	return (0);
 }
 

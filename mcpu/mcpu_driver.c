@@ -33,7 +33,7 @@ void	draw_pscene(t_display *disp, t_scene *scene)
 		while (x < disp->renderer_driver->param.x)
 		{
 			from_cam = gen_camray(x, y, &scene->cam);
-			surface[(720 - y) * 1280 + x] = color_from_ray(scene, &from_cam);
+			surface[(719 - y) * 1280 + x] = color_from_ray(scene, &from_cam);
 			++x;
 		}
 		++y;
@@ -49,8 +49,8 @@ void	start_draw(t_launch_param *params)
 	d = params->d;
 	p = *d;
 	dr = *d->renderer_driver;
-	dr.param.by = 720 / 4 * (long)params->n + 1;
-	dr.param.y = 720 / 4 * ((long)params->n + 1) + 1;
+	dr.param.by = 720 / 4 * (long)params->n;
+	dr.param.y = 720 / 4 * ((long)params->n + 1);
 	p.renderer_driver = &dr;
 	draw_pscene(&p, params->s);
 }
