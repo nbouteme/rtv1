@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:55:04 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/28 00:15:07 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/28 01:23:49 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ t_iscene	*load_iscene(const char *fn)
 	t_parser		*p;
 
 	buf[0] = from_file(fn, &size, scene_file_check);
-	buf[1] = LANG;
+	buf[1] = from_file("lang", &size, scene_file_check);
 	l = lang_parser(buf[1]);
 	p = l ? get_parser(l, "file") : 0;
 	buf[3] = 0;

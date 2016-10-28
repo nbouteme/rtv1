@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:55:04 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/28 00:13:45 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/28 01:22:29 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@
 # define LANG36 0x20, 0x3c, 0x66, 0x6c, 0x6f, 0x61, 0x74, 0x3e, 0x20, 0x7c,
 # define LANG37 0x20, 0x3c, 0x69, 0x6e, 0x74, 0x3e, 0x20, 0x7c, 0x20, 0x3c,
 # define LANG38 0x72, 0x65, 0x66, 0x3e, 0x20, 0x7c, 0x20, 0x3c, 0x73, 0x74,
-# define LANG39 0x72, 0x69, 0x6e, 0x67, 0x3e, 0x3b
+# define LANG39 0x72, 0x69, 0x6e, 0x67, 0x3e, 0x3b, 0x00
 
 # define LANGM1 LANG0 LANG1 LANG2 LANG3 LANG4 LANG5 LANG6 LANG7 LANG8 LANG9
 # define LANGM2 LANG10 LANG11 LANG12 LANG13 LANG14 LANG15 LANG16 LANG17 LANG18

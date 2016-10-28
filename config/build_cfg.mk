@@ -1,9 +1,9 @@
 NAME = rtv1
 TYPE = prog
 
-MODULES = src mcpu
-CFLAGS = -Wall -Wextra -Werror -g
-#CFLAGS = -Wall -Wextra -Werror -flto -Ofast -march=native -mtune=native -ffinite-math-only -funsafe-math-optimizations -fno-math-errno  -ffast-math
+MODULES = src
+#CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -flto -Ofast -march=native -mtune=native -ffinite-math-only -funsafe-math-optimizations -fno-math-errno  -ffast-math
 LFLAGS = $(CFLAGS) -lm
 INCLUDE_DIRS = $(PKG_DIR)/include
 DEPS = libft xmlx
@@ -15,8 +15,6 @@ LFLAGS += -lpthread
 endif
 
 ifneq ($(filter gpu,$(MODULES)),)
-
-#TODO: check system
 
 ifeq (($shell uname),Darwin)
 CUDA_LIBS = /opt/cuda/lib64
