@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:13:56 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:42:43 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/10/30 01:33:54 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int		gen_png(t_display *d)
 	image = to_png((t_png_conv_p){1280, 720, pixbuf, size, &size});
 	write(1, image, size);
 	free(image);
+	free(pixbuf);
 	close(1);
 	return (false);
 }
