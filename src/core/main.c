@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 22:10:35 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 12:24:09 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/11/08 16:01:53 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,6 @@ int		main(int argc, char **argv)
 	t_display	*display;
 	t_args		args;
 
-	if (argc <= 1)
-		return (0);
 	args = load_args(argc, argv);
 	if (args.errored || !(scene = load_iscene(args.filename)))
 	{
