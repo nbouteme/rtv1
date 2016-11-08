@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/09/18 00:32:56 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/09/18 02:55:53 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/11/08 14:39:46 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ char		*str_escape(char *s, const char *in[], const char *out[])
 		if ((i = find_in(s, in)) != -1)
 		{
 			tmp = outp;
-			outp = ft_memalloc(strlen(tmp) + ft_strlen(out[i]) + 1);
+			outp = ft_memalloc(ft_strlen(tmp) + ft_strlen(out[i]) + 1);
 			ft_strcat(outp, tmp);
 			ft_strcat(outp, out[i]);
 			ol += ft_strlen(out[i]);
