@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 13:49:00 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:18:39 by nbouteme         ###   ########.fr       */
+/*   Updated: 2016/11/08 14:43:37 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,11 +80,11 @@ void		*to_png(t_png_conv_p p)
 	{
 		lines[1] = lines[0];
 		lines[0] = malloc(os + (*seg)->size + 1);
-		memcpy(lines[0], lines[1], os);
+		ft_memcpy(lines[0], lines[1], os);
 		free(lines[1]);
 		lines[1] = &lines[0][os];
 		*lines[1] = 0;
-		memcpy(lines[1] + 1, (*seg)->data, (*seg)->size);
+		ft_memcpy(lines[1] + 1, (*seg)->data, (*seg)->size);
 		os += (*seg)->size + 1;
 		free(*seg);
 		++seg;
