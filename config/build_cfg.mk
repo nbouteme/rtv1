@@ -1,7 +1,7 @@
 NAME = rtv1
 TYPE = prog
 
-MODULES = src
+MODULES = src gpu
 #CFLAGS = -Wall -Wextra -Werror -g
 CFLAGS = -Wall -Wextra -Werror -flto -Ofast -march=native -mtune=native -ffinite-math-only -funsafe-math-optimizations -fno-math-errno  -ffast-math
 LFLAGS = $(CFLAGS) -lm
@@ -19,7 +19,7 @@ ifneq ($(filter gpu,$(MODULES)),)
 ifeq (($shell uname),Darwin)
 CUDA_LIBS = /opt/cuda/lib64
 else
-CUDA_LIBS = /Developer/NVIDIA/CUDA-7.5/lib
+CUDA_LIBS = /Developer/NVIDIA/CUDA-8.0/lib
 LFLAGS += -Wl,-rpath,$(CUDA_LIBS)
 endif
 
