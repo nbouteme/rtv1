@@ -1,0 +1,11 @@
+#pragma once
+
+#include "ctypes.hu"
+
+struct t_cuda_scene;
+
+t_cuda_scene *generate_cscene(t_iscene *fn);
+__device__ __host__
+t_cvec3 cuda_color_from_ray(t_cuda_scene *scene, t_cray from);
+__device__ __host__
+t_cvec3 cuda_color_from_ray(t_cuda_scene *scene, t_cray from);

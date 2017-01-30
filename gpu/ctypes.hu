@@ -1,0 +1,93 @@
+#pragma once
+
+extern "C" {
+#include <core/core.h>
+}
+
+#include <array>
+#include <initializer_list>
+#include <cstring>
+
+#include "t_cvec3.hu"
+#include "t_cvec4.hu"
+#include "t_cmat3.hu"
+#include "t_cmat4.hu"
+#include "rotate.hu"
+
+template<typename T>
+struct t_darray
+{
+	int size;
+	T elem[1];
+	__device__ __host__
+	T &operator[](int n)
+	{
+		return elem[n];
+	}
+};
+
+
+struct t_cray
+{
+	t_cvec3 pos, dir;
+};
+
+struct	t_ccamera
+{
+	t_cvec3	pos;
+	t_cvec3	dir;
+	t_cvec3	up;
+	t_cvec3	u;
+	t_cvec3	v;
+	t_cvec3	vpblp;
+	float	vphw;
+	float	vphh;
+};
+
+struct	t_hit_info
+{
+	t_cvec3 point;
+	t_cvec3 normal;
+	float dist;
+};
+
+struct	t_primitive;
+typedef int (*t_ray_intersect_fun)(t_cray &ray,
+									t_hit_info &hit);
+
+struct	t_primitive
+{
+	t_ray_intersect_fun intersect;
+	t_cmat4 transform;
+	t_cmat4 itransform;
+	t_cmat3 norm;
+	t_cmat3 inorm;
+	t_cvec3 diffuse;
+	t_cvec3 ambiant;
+	float spec;
+};
+
+
+t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base);
+
+struct t_cspot
+{
+	t_cvec3 pos;
+};
+
+struct t_cuda_scene
+{
+	t_ccamera cam;
+	int size;
+	int n_primitives;
+	int n_spots;
+	t_primitive	*primitives;
+	t_cspot *spots;
+};
+
+struct cuda_context
+{
+	t_cuda_scene *scene;
+	t_cuda_scene *gpu_scene;
+	int mouse_state[2];
+};
