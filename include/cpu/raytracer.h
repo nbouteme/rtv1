@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 10:50:01 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 10:50:44 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 14:41:01 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 # include <cpu/math.h>
 # include <cpu/scene.h>
+
+# define MAX_DEPTH 5
 
 typedef struct	s_inter_info
 {
@@ -30,12 +32,13 @@ typedef struct	s_colargs
 	t_hit_info	*hit;
 	t_ray		shadow_ray;
 	t_vec3		light_dir;
+	int			depth;
 }				t_colargs;
 
 void			correct_gamma(t_vec3 *framebuffer);
 void			bake_camray(t_camera *c);
 t_ray			gen_camray(int x, int y, t_camera *c);
-t_vec3			color_from_ray(t_scene *scene, t_ray *from);
+t_vec3			color_from_ray(t_scene *scene, t_ray *from, int depth);
 float			deg2rad(float deg);
 
 #endif

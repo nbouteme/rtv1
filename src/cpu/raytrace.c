@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 12:42:37 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:10:10 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 15:16:29 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 int		inter(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 {
 	int			i;
-	bool		hit_found;
+	int			hit_found;
 	t_hit_info	back;
 
-	hit_found = false;
+	hit_found = 0;
 	i = 0;
 	while (i < scene->n_primitives)
 	{
@@ -30,7 +30,7 @@ int		inter(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 			if (out->maxdist > hit->dist)
 			{
 				out->maxdist = hit->dist;
-				hit_found = true;
+				hit_found = 1;
 				*out->out = &scene->primitives[i];
 			}
 			else
@@ -52,16 +52,28 @@ t_vec3	color_from_material(t_colargs *args)
 	coef = vec3_dot(args->hit->normal, args->shadow_ray.dir);
 	refl = vec3_reflect(args->light_dir, args->hit->normal);
 	vec3_normalize(&refl);
-	spec = powf(MAXF(vec3_dot(args->ray->dir, refl), 0.0), args->prim->spec);
+	if (args->prim->mat.reflectivity == 1.0f)
+		return (color_from_ray(args->scene, &(t_ray){vec3_add(args->hit->point, vec3_muls(vec3_reflect(args->ray->dir, args->hit->normal), 0.001f)),
+						vec3_reflect(args->ray->dir, args->hit->normal)}, args->depth + 1));
+	if (args->prim->mat.transluscence == 1.0f)
+		return (color_from_ray(args->scene, &(t_ray){vec3_add(args->hit->point, vec3_muls(vec3_reflect(args->ray->dir, args->hit->normal), 0.001f)),
+						args->ray->dir}, args->depth + 1));
+	spec = pow(MAXF(vec3_dot(args->ray->dir, refl), 0.0f), args->prim->mat.spec_intensity);
 	specv = (t_vec3){{spec, spec, spec }};
-	coef = coef < 0 ? 0.0 : coef;
-	diff = vec3_muls(args->prim->diffuse, coef);
-	return (vec3_add(vec3_add(specv, diff), args->prim->ambiant));
+	diff = vec3_muls(args->prim->mat.diffuse, coef < 0 ? 0.0f : coef);
+	specv = vec3_add(vec3_add(specv, diff), args->prim->mat.ambiant);
+	if (args->prim->mat.reflectivity < 1.0f && args->prim->mat.reflectivity > 0)
+		specv = vec3_mix(specv, color_from_ray(args->scene, &(t_ray){vec3_add(args->hit->point, vec3_muls(vec3_reflect(args->ray->dir, args->hit->normal), 0.001f)),
+		vec3_reflect(args->ray->dir, args->hit->normal)}, args->depth + 1), args->prim->mat.reflectivity);
+	if (args->prim->mat.transluscence < 1.0f && args->prim->mat.transluscence > 0)
+		specv = vec3_mix(specv, color_from_ray(args->scene, &(t_ray){vec3_add(args->hit->point, vec3_muls(vec3_reflect(args->ray->dir, args->hit->normal), 0.001f)),
+		vec3_reflect(args->ray->dir, args->hit->normal)}, args->depth + 1), args->prim->mat.reflectivity);
+	return (specv);
 }
 
 typedef t_inter_info	t_ii;
 
-t_vec3	color_from_ray(t_scene *s, t_ray *from)
+t_vec3	color_from_ray(t_scene *s, t_ray *from, int depth)
 {
 	int			i;
 	t_hit_info	h[2];
@@ -70,10 +82,9 @@ t_vec3	color_from_ray(t_scene *s, t_ray *from)
 	t_vec3		out[2];
 
 	i = -1;
-	ft_memset(&out[1], 0, sizeof(out[1]));
-	ft_memset(p, 0, sizeof(p));
-	if (!inter(from, s, &h[0], &(t_inter_info){9999, &p[0]}))
+	if (depth >= MAX_DEPTH || !inter(from, s, &h[0], &(t_inter_info){9999, &p[0]}))
 		return (vec3_null());
+	ft_memset(&out[1], 0, sizeof(out[1]));
 	while (++i < s->n_spots)
 	{
 		h[1] = h[0];
@@ -82,10 +93,10 @@ t_vec3	color_from_ray(t_scene *s, t_ray *from)
 			vec3_muls(h[1].normal, 0.001f)), s->spots[i].pos);
 		out[0] = vec3_sub(s->spots[i].pos, h[1].point);
 		if (inter(&r, s, &h[1], &(t_ii){vec3_norme(out[0]), &p[1]}))
-			out[1] = vec3_add(out[1], p[0]->ambiant);
+			out[1] = vec3_add(out[1], p[0]->mat.ambiant);
 		else
 			out[1] = vec3_add(out[1], color_from_material(&(t_colargs) {
-				s, from, p[0], &h[1], r, out[0]}));
+						s, from, p[0], &h[1], r, out[0], depth}));
 	}
 	return (vec3_muls(out[1], 1.0f / s->n_spots));
 }

@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 11:54:29 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/27 23:52:08 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 15:10:15 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,14 +76,22 @@ t_generror		*gen_material(t_imaterial *ret, t_ast *ass, t_ast *r)
 	pos = eval_ref(r, get_value(ass, "diffuse"));
 	if (!pos)
 		return (new_gerror(ass, ATTR_MISS "material: ", "diffuse"));
-	if ((e = gen_vec3(ret->diffuse, pos, r)))
+	if ((e = gen_vec3(ret->diffuse.v, pos, r)))
 		return (e);
 	ret->spec_intensity = 999999.9f;
+	ret->reflectivity = 0.0f;
+	ret->transluscence = 0.0f;
 	pos = eval_ref(r, get_value(ass, "ambiant"));
-	if (pos && (e = gen_vec3(ret->ambiant, pos, r)))
+	if (pos && (e = gen_vec3(ret->ambiant.v, pos, r)))
 		return (e);
 	pos = eval_ref(r, get_value(ass, "spec"));
 	if (pos && (e = gen_scalar(&ret->spec_intensity, pos)))
+		return (e);
+	pos = eval_ref(r, get_value(ass, "reflectivity"));
+	if (pos && (e = gen_scalar(&ret->reflectivity, pos)))
+		return (e);
+	pos = eval_ref(r, get_value(ass, "transluscence"));
+	if (pos && (e = gen_scalar(&ret->transluscence, pos)))
 		return (e);
 	return (0);
 }

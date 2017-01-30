@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:33:55 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 14:10:13 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 14:56:17 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	draw_scene(t_vec3 *surface, t_scene *scene)
 		while (x < 1280)
 		{
 			from_cam = gen_camray(x, y, &scene->cam);
-			surface[(719 - y) * 1280 + x] = color_from_ray(scene, &from_cam);
+			surface[(719 - y) * 1280 + x] = color_from_ray(scene, &from_cam, 0);
 			++x;
 		}
 		++y;

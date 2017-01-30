@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/19 23:23:09 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/27 23:57:33 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 14:43:03 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@ typedef struct	s_itrans
 
 typedef struct	s_imaterial
 {
-	float		ambiant[3];
-	float		diffuse[3];
+	t_vec3		ambiant;
+	t_vec3		diffuse;
 	float		spec_intensity;
+	float		reflectivity;
+	float		transluscence;
 }				t_imaterial;
 
 typedef struct	s_iprimitive

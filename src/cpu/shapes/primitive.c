@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/07/22 00:19:26 by nbouteme          #+#    #+#             */
-/*   Updated: 2016/10/01 13:32:59 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/01/30 14:54:41 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,6 @@ t_primitive	*new_primitive(t_primitive *alloc, t_iprimitive *base)
 	alloc->itransform = mat4_inverse(alloc->transform);
 	alloc->norm = mat3_transpose(mat3_topleft(alloc->itransform));
 	alloc->inorm = mat3_transpose(mat3_topleft(alloc->transform));
-	ft_memcpy(alloc->diffuse.v, base->mat.diffuse, sizeof(t_vec3));
-	ft_memcpy(alloc->ambiant.v, base->mat.ambiant, sizeof(t_vec3));
-	alloc->spec = base->mat.spec_intensity;
+	alloc->mat = base->mat;
 	return (alloc);
 }
