@@ -5,7 +5,19 @@
 struct t_cuda_scene;
 
 t_cuda_scene *generate_cscene(t_iscene *fn);
-__device__ __host__
-t_cvec3 cuda_color_from_ray(t_cuda_scene *scene, t_cray from);
-__device__ __host__
-t_cvec3 cuda_color_from_ray(t_cuda_scene *scene, t_cray from);
+
+template <int depth>
+__device__ t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from);
+
+template <int depth>
+__device__ t_cvec3 cuda_color_from_material(t_cuda_scene &scene, t_cray &ray, t_primitive &prim,
+								 t_hit_info &hit, t_cray &shadow_ray, t_cvec3 &light_dir);
+
+__device__
+int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+__device__
+int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+__device__
+int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+__device__
+int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);

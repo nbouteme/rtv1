@@ -120,7 +120,7 @@ struct t_cvec3
 	__device__ __host__
 	const t_cvec3 &normalize()
 	{
-		float n = 1.0f / sqrtf(this->dot(*this));
+		float n = rsqrtf(this->dot(*this));
 		this->x *= n;
 		this->y *= n;
 		this->z *= n;
@@ -141,5 +141,17 @@ struct t_cvec3
 			this->z * rhs[0] - this->x * rhs[2],
 			this->x * rhs[1] - this->y * rhs[0]
 		};
+	}
+
+	__device__ __host__
+	t_cvec3 reflect(const t_cvec3 &n)
+	{
+		return *this - (n * (2 * n.dot(*this)));
+	}
+
+	__device__ __host__
+	t_cvec3 mix(t_cvec3 rhs, float t)
+	{
+		return (*this * (1.0f - t) + rhs * t);
 	}
 };

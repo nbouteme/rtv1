@@ -17,8 +17,10 @@ t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base)
 	alloc->itransform = alloc->transform.inverse();
 	alloc->norm = alloc->itransform.topleft().transpose();
 	alloc->inorm = alloc->transform.topleft().transpose();
-	alloc->diffuse = t_cvec3(base->mat.diffuse);
-	alloc->ambiant = t_cvec3(base->mat.ambiant);
-	alloc->spec = base->mat.spec_intensity;
+	alloc->mat.ambiant = base->mat.ambiant;
+	alloc->mat.diffuse = base->mat.diffuse;
+	alloc->mat.spec_intensity = base->mat.spec_intensity;
+	alloc->mat.reflectivity = base->mat.reflectivity;
+	alloc->mat.transluscence = base->mat.transluscence;
 	return (alloc);
 }

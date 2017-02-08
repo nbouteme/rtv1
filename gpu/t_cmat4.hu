@@ -8,7 +8,6 @@ struct t_cmat4
 	__device__ __host__
 	t_cmat4(){}
 
-
 	__device__ __host__
 	t_cmat4(float i)
 	{
@@ -139,6 +138,20 @@ struct t_cmat4
 		return (inverse * (1.0f / det));
 	}
 
+	__device__ __host__
+	inline t_cvec3 operator*(const t_cvec3 &rhs) const
+	{
+#ifdef __CUDA_ARCH__
+		auto ret = *this * t_cvec4(rhs, 1.0f);
+		return {__fdividef(ret[0], ret[3]),
+				__fdividef(ret[1], ret[3]),
+				__fdividef(ret[2], ret[3]) };
+#else
+		auto ret = *this * t_cvec4(rhs, 1.0f);
+		return {ret[0] / ret[3], ret[1] / ret[3], ret[2] / ret[3] };
+#endif
+	}
+
 	t_cmat3 topleft()
 	{
 		t_cmat3 ret;
@@ -151,60 +164,51 @@ struct t_cmat4
 		return (ret);
 	}
 
-};
-
-template <>
-__device__ __host__
-inline t_cvec4 t_cmat4::operator*<t_cvec4>(const t_cvec4 &rhs) const
-{
-	t_cvec4 ret;
-	int i = 0;
-
-	while(i < 4)
+	__device__ __host__
+	inline t_cvec4 operator*(const t_cvec4 &rhs) const
 	{
-		int j = 0;
-		while (j < 4)
-		{
-			ret.v[i] += v[i][j] * rhs.v[j];
-			++j;
-		}
-		++i;
-	}
-	return ret;
-}
+		t_cvec4 ret;
+		int i = 0;
 
-template <>
-__device__ __host__
-inline t_cmat4 t_cmat4::operator*<t_cmat4>(const t_cmat4 &rhs) const
-{
-	t_cmat4 ret;
-	int i = 0;
-
-	while (i < 4)
-	{
-		int k = 0;
-		while (k < 4)
+		while(i < 4)
 		{
 			int j = 0;
 			while (j < 4)
 			{
-				ret.v[i].v[j] += v[i][k] * rhs.v[k][j];
+				ret.v[i] += v[i][j] * rhs.v[j];
 				++j;
 			}
-			++k;
+			++i;
 		}
-		++i;
+		return ret;
 	}
-	return ret;
-}
 
-template <>
-__device__ __host__
-inline t_cvec3 t_cmat4::operator*<t_cvec3>(const t_cvec3 &rhs) const
-{
-	auto ret = *this * t_cvec4(rhs, 1.0f);
-	return {ret[0] / ret[3], ret[1] / ret[3], ret[2] / ret[3] };
-}
+	
+	__device__ __host__
+	inline t_cmat4 operator*(const t_cmat4 &rhs) const
+	{
+		t_cmat4 ret;
+		int i = 0;
+
+		while (i < 4)
+		{
+			int k = 0;
+			while (k < 4)
+			{
+				int j = 0;
+				while (j < 4)
+				{
+					ret.v[i].v[j] += v[i][k] * rhs.v[k][j];
+					++j;
+				}
+				++k;
+			}
+			++i;
+		}
+		return ret;
+	}
+
+};
 
 __device__ __host__
 inline t_cmat4 translate(const t_cvec3 &pos)

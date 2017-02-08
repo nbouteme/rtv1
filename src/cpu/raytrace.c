@@ -6,7 +6,7 @@
 /*   By: nbouteme <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/10/01 12:42:37 by nbouteme          #+#    #+#             */
-/*   Updated: 2017/01/30 15:16:29 by nbouteme         ###   ########.fr       */
+/*   Updated: 2017/02/01 12:31:03 by nbouteme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,16 @@ int		inter(t_ray *from, t_scene *scene, t_hit_info *hit, t_inter_info *out)
 		++i;
 	}
 	return (hit_found);
+}
+
+t_vec3 vec3_refract(t_vec3 a, t_vec3 n, float r)
+{
+	float k;
+
+	k = 1.0f - r * r * (1.0f - vec3_dot(n, a) * vec3_dot(n, a));
+	if (k < 0.0f)
+		return vec3_null();
+	return vec3_sub(vec3_muls(a, r), vec3_muls(n, (r * vec3_dot(n, a) + sqrtf(k))));
 }
 
 t_vec3	color_from_material(t_colargs *args)

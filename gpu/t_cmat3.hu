@@ -24,18 +24,58 @@ struct t_cmat3
 		v[2] = _c;
 	}
 
-	template <typename T>
 	__device__ __host__
-	T operator*(const T &rhs) const;
+	inline t_cmat3 operator*(const t_cmat3 &rhs) const
+	{
+		t_cmat3 ret;
+		int i = 0;
+
+		while (i < 3)
+		{
+			int k = 0;
+			while (k < 3)
+			{
+				int j = 0;
+				while (j < 3)
+				{
+					ret.v[i].v[j] += v[i][k] * rhs.v[k][j];
+					++j;
+				}
+				++k;
+			}
+			++i;
+		}
+		return ret;
+	}
 
 	__device__ __host__
-	const t_cvec3 &operator[](int n) const
+	inline t_cvec3 operator*(const t_cvec3 &rhs) const
+	{
+		t_cvec3 ret;
+		int i = 0;
+
+		while(i < 3)
+		{
+			int j = 0;
+			while (j < 3)
+			{
+				ret.v[i] += v[i][j] * rhs.v[j];
+				++j;
+			}
+			++i;
+		}
+		return ret;
+	}
+
+	
+	__device__ __host__
+	inline const t_cvec3 &operator[](int n) const
 	{
 		return v[n];
 	}
 
 	__device__ __host__
-	t_cmat3 operator+(t_cmat3 f) const
+	inline t_cmat3 operator+(t_cmat3 f) const
 	{
 		t_cmat3	ret = *this;
 		int i = 0;
@@ -53,7 +93,7 @@ struct t_cmat3
 	}
 
 	__device__ __host__
-	t_cmat3 operator+(float f) const
+	inline t_cmat3 operator+(float f) const
 	{
 		t_cmat3	ret = *this;
 		int i = 0;
@@ -68,13 +108,13 @@ struct t_cmat3
 	}
 
 	__device__ __host__
-	t_cvec3 &operator[](int n)
+	inline t_cvec3 &operator[](int n)
 	{
 		return v[n];
 	}
 
 	__device__ __host__
-	t_cmat3 operator*(float rhs) const
+	inline t_cmat3 operator*(float rhs) const
 	{
 		t_cmat3 ret;
 		int i = 0;
@@ -92,7 +132,7 @@ struct t_cmat3
 		return ret;
 	}
 	
-	t_cmat3 transpose()
+	inline t_cmat3 transpose()
 	{
 		t_cmat3 ret;
 		int i = 0;
@@ -111,47 +151,3 @@ struct t_cmat3
 	}
 };
 
-template <>
-__device__ __host__
-inline t_cvec3 t_cmat3::operator*<t_cvec3>(const t_cvec3 &rhs) const
-{
-	t_cvec3 ret;
-	int i = 0;
-
-	while(i < 3)
-	{
-		int j = 0;
-		while (j < 3)
-		{
-			ret.v[i] += v[i][j] * rhs.v[j];
-			++j;
-		}
-		++i;
-	}
-	return ret;
-}
-
-template <>
-__device__ __host__
-inline t_cmat3 t_cmat3::operator*<t_cmat3>(const t_cmat3 &rhs) const
-{
-	t_cmat3 ret;
-	int i = 0;
-
-	while (i < 3)
-	{
-		int k = 0;
-		while (k < 3)
-		{
-			int j = 0;
-			while (j < 3)
-			{
-				ret.v[i].v[j] += v[i][k] * rhs.v[k][j];
-				++j;
-			}
-			++k;
-		}
-		++i;
-	}
-	return ret;
-}

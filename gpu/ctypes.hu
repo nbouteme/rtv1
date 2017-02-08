@@ -55,16 +55,24 @@ struct	t_primitive;
 typedef int (*t_ray_intersect_fun)(t_cray &ray,
 									t_hit_info &hit);
 
+typedef struct	s_cmaterial
+{
+	t_cvec3		ambiant;
+	t_cvec3		diffuse;
+	float		spec_intensity;
+	float		reflectivity;
+	float		transluscence;
+}				t_cmaterial;
+
+
 struct	t_primitive
 {
-	t_ray_intersect_fun intersect;
+	int type;
 	t_cmat4 transform;
 	t_cmat4 itransform;
 	t_cmat3 norm;
 	t_cmat3 inorm;
-	t_cvec3 diffuse;
-	t_cvec3 ambiant;
-	float spec;
+	t_cmaterial mat;
 };
 
 

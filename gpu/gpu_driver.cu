@@ -84,7 +84,12 @@ int cuda_genimage(t_display *disp)
 
 	cudaArray *array;
     dim3 block(8, 48, 1);
-    dim3 grid(1280 / block.x, 720 / block.y, 1);
+    dim3 grid(1280 / 32 / block.x, 720 / block.y, 1);
+
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
 	cudaGraphicsMapResources(1, &vbo_res, 0);
 	{
 		cudaError_t err = cudaGetLastError();
@@ -103,13 +108,17 @@ int cuda_genimage(t_display *disp)
 		if (err != cudaSuccess) 
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
+	cudaEventRecord(start);
+	
 	draw_scene<<<grid, block>>>(*cc->gpu_scene);
 	{
 		cudaError_t err = cudaGetLastError();
 		if (err != cudaSuccess) 
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
+	cudaEventRecord(stop);
     cudaDeviceSynchronize();
+	cudaEventSynchronize(stop);
 	{
 		cudaError_t err = cudaGetLastError();
 		if (err != cudaSuccess) 
@@ -121,6 +130,10 @@ int cuda_genimage(t_display *disp)
 		if (err != cudaSuccess) 
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	printf("\r%f ms, %f fps.", milliseconds, 1.0f / (milliseconds / 1000.0f));
+	fflush(stdout);
 	return 0;
 }
 
@@ -187,7 +200,7 @@ t_cuda_scene *generate_cscene(t_iscene *fn)
 	while (i < fn->n_primitives)
 	{
 		new_primitive(&ret->primitives[i], &fn->primitives[i]);
-		ret->primitives[i].intersect = funs[fn->primitives[i].type];
+		ret->primitives[i].type = fn->primitives[i].type;
 		++i;
 	}
 	ret->size = sizeof(t_cuda_scene) +

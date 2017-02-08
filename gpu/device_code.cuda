@@ -1,7 +1,7 @@
 #include "ctypes.hu"
 #include "scene.hu"
 
-
+#define MAX_DEPTH 3
 
 __device__
 void print_vec3(const t_cvec3 &col)
@@ -29,7 +29,7 @@ int solve_second(float a, float b, float c, float &x0, float &x1)
 		return (0);
 	if (discriminant == 0)
 	{
-		x0 = -0.5f * (b / a);
+		x0 = -0.5f * (__fdividef(b, a));
 		x1 = x0;
 	}
 	else
@@ -37,8 +37,8 @@ int solve_second(float a, float b, float c, float &x0, float &x1)
 		q = b > 0 ?
 			-0.5f * (b + sqrt(discriminant)) :
 			-0.5f * (b - sqrt(discriminant));
-		x0 = q / a;
-		x1 = c / q;
+		x0 = __fdividef(q, a);
+		x1 = __fdividef(c, q);
 	}
 	if (x0 > x1)
 	{
@@ -77,7 +77,26 @@ int intersect(t_primitive &self, const t_cray &from, t_hit_info &info)
 	int res;
 
 	from2 = transform_ray(self.itransform, self.inorm, from);
-	res = self.intersect(from2, info);
+	switch(self.type)
+	{
+	case 0:
+		res = plane_cuda_ray_intersect(from2, info);
+		break;
+	case 1:
+		res = sphere_cuda_ray_intersect(from2, info);
+		break;
+	case 2:
+		res = cylinder_cuda_ray_intersect(from2, info);
+		break;
+	case 3:
+		res = cone_cuda_ray_intersect(from2, info);
+		break;
+	default:
+		res = 0;
+	}
+	//res = self.intersect(from2, info);
+	// Doubles les perf de switch au lieu d'utiliser un pointeur de fonction, mais
+	// quadruple le temps de compilation...
 	if (res)
 	{
 		info.point = self.transform * info.point;
@@ -111,6 +130,7 @@ int cintersect_with_smth(t_cray &from, t_cuda_scene &scene, t_hit_info &hit, flo
 		}
 		++i;
 	}
+	__syncthreads();
 	return (hit_found);
 }
 
@@ -120,6 +140,23 @@ float maxf(float a, float b)
 	return a < b ? b : a;
 }
 
+template <>
+__device__
+t_cvec3 cuda_color_from_material<MAX_DEPTH>(t_cuda_scene &scene, t_cray &ray, t_primitive &prim,
+								 t_hit_info &hit, t_cray &shadow_ray, t_cvec3 &light_dir)
+{
+	return {{0, 0, 0}};
+}
+
+
+template <>
+__device__
+t_cvec3 cuda_color_from_ray<MAX_DEPTH>(t_cuda_scene &scene, t_cray &from)
+{
+	return {{0, 0, 0}};
+}
+
+template<int depth>
 __device__
 t_cvec3 cuda_color_from_material(t_cuda_scene &scene, t_cray &ray, t_primitive &prim,
 								 t_hit_info &hit, t_cray &shadow_ray, t_cvec3 &light_dir)
@@ -132,13 +169,33 @@ t_cvec3 cuda_color_from_material(t_cuda_scene &scene, t_cray &ray, t_primitive &
 
 	coef = hit.normal.dot(shadow_ray.dir);
 	refl = light_dir.reflect(hit.normal).normalize();
-	spec = powf(maxf(ray.dir.dot(refl), 0.0), prim.spec);
+	if (prim.mat.reflectivity >= 1.0f)
+		return (cuda_color_from_ray<depth + 1>(scene,
+									(t_cray){hit.point + (ray.dir.reflect(hit.normal) * 0.001f), ray.dir.reflect(hit.normal)}));
+/*	if (prim.mat.transluscence >= 1.0f)
+		return (cuda_color_from_ray(scene,
+							   (t_cray){hit.point + ray.dir.reflect(hit.normal) * 0.001f, ray.dir},
+							   depth + 1));
+*/	
+	spec = powf(maxf(ray.dir.dot(refl), 0.0), prim.mat.spec_intensity);
 	specv = t_cvec3(spec);
 	coef = coef < 0 ? 0.0 : coef;
-	diff = prim.diffuse * coef;
-	return specv + diff + prim.ambiant;
+	diff = prim.mat.diffuse * coef;
+	specv += diff + prim.mat.ambiant;
+
+	if (prim.mat.reflectivity < 1.0f && prim.mat.reflectivity > 0)
+		specv = specv.mix(cuda_color_from_ray<depth + 1>(scene, (t_cray){hit.point + (ray.dir.reflect(hit.normal)) * 0.001f,
+						ray.dir.reflect(hit.normal)}), prim.mat.reflectivity);
+/*	if (prim.mat.transluscence < 1.0f && prim.mat.transluscence > 0)
+		specv = specv.mix(cuda_color_from_ray(scene,
+											  (t_cray){hit.point + ray.dir.reflect(hit.normal) * 0.001f, ray.dir.reflect(hit.normal)},
+											  depth + 1),
+						  prim.mat.reflectivity);
+*/	return specv;
 }
 
+
+template <int depth>
 __device__
 t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
 {
@@ -147,7 +204,8 @@ t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
 	t_primitive *prim[2] = {0};
 	t_cvec3 out = {{0, 0, 0}};
 
-	if (!cintersect_with_smth(from, scene, hit[0], 9999, prim[0]))
+	
+	if (depth > MAX_DEPTH || !cintersect_with_smth(from, scene, hit[0], 9999, prim[0]))
 		return (out);
 
 	while (i < scene.n_spots)
@@ -157,14 +215,16 @@ t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
 		t_cray shadow_ray = cgen_ray(hit[1].point + (hit[1].normal * 0.001f), scene.spots[i].pos);
 		t_cvec3 light_dir = scene.spots[i].pos - hit[1].point;
 		if (cintersect_with_smth(shadow_ray, scene, hit[1], light_dir.norme(), prim[1]))
-			out += prim[0]->ambiant;
+			out += prim[0]->mat.ambiant;
 		else
-			out += cuda_color_from_material(scene, from, *prim[0],
+			out += cuda_color_from_material<depth>(scene, from, *prim[0],
 											hit[1], shadow_ray, light_dir);
 		++i;
 	}
-	return out * (1.0f / scene.n_spots);
+	__syncthreads();
+	return out * (__fdividef(1.0f, scene.n_spots));
 }
+
 
 __host__ __device__
 void cuda_bake_camray(t_ccamera *c)
@@ -202,7 +262,7 @@ int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 		return (false);
 	if (ray.pos.z < 0)
 		norm.z = -1;
-	t = ray.pos.z / ray.dir.z;
+	t = __fdividef(ray.pos.z, ray.dir.z);
 	t = t > 0 ? t : -t;
 	hit.point = ray.pos + (ray.dir * t);
 	hit.normal = norm;
@@ -229,7 +289,7 @@ int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 		b = c;
 		c = tmp;
 	}
-		if (b < 0)
+	if (b < 0)
 	{
 		if (c < 0)
 			return (0);
@@ -293,7 +353,7 @@ int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 		b = c;
 	}
 	hit.point = ray.pos + (ray.dir * b);
-	a = 1.0f / sqrtf(2.0f);
+	a = rsqrtf(2.0f);
 	/* TODO: Compute the correct normal  */
 	hit.normal = hit.point;
 	hit.normal.normalize();
@@ -316,15 +376,23 @@ float conv(float c)
 	return (1.055f * powf(c, 0.4166667) - 0.055f);
 }
 
+#define TILE_SIZE 32
+
 __global__
 void draw_scene(t_cuda_scene &scene)
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-	t_cray ray = cuda_gen_camray(x, y, scene.cam);
-	t_cvec3 col = cuda_color_from_ray(scene, ray);
-	
-	float4 gcol = make_float4(conv(col[0]), conv(col[1]), conv(col[2]), 1.0f);
-	surf2Dwrite(gcol, surRef, x * sizeof(float4), 719 - y);
+	x *= TILE_SIZE;
+	if (x >= 1280)
+		return;
+	for (int i = 0; i < TILE_SIZE; ++i)
+		{
+			t_cray ray = cuda_gen_camray(x + i, y, scene.cam);
+			t_cvec3 col = cuda_color_from_ray<0>(scene, ray);
+
+			float4 gcol = make_float4(conv(col[0]), conv(col[1]), conv(col[2]), 1.0f);
+			surf2Dwrite(gcol, surRef, (x + i) * sizeof(float4), 719 - (y));
+		}
 }
