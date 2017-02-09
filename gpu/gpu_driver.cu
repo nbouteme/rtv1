@@ -1,6 +1,7 @@
 extern "C" {
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
+#include <cuda_profiler_api.h>
 #include <cuda_gl_interop.h>
 #include <cuda/cuda.h>
 #include <xmlx.h>
@@ -68,7 +69,6 @@ void rotate_camera(cuda_context *cc, double x, double y)
 extern "C"
 int cuda_genimage(t_display *disp)
 {
-	//static int texinit = 0;
 	cuda_context *cc = (cuda_context*)disp->renderer_driver->ctx;
 	cuda_bake_camray(&cc->scene->cam);
 
@@ -78,7 +78,7 @@ int cuda_genimage(t_display *disp)
 	cudaMemcpy(cc->gpu_scene, cc->scene, cc->scene->size, cudaMemcpyHostToDevice);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 
@@ -93,41 +93,40 @@ int cuda_genimage(t_display *disp)
 	cudaGraphicsMapResources(1, &vbo_res, 0);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	cudaGraphicsSubResourceGetMappedArray(&array, vbo_res, 0, 0);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	cudaBindSurfaceToArray(surRef, array);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	cudaEventRecord(start);
-	
+
 	draw_scene<<<grid, block>>>(*cc->gpu_scene);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	cudaEventRecord(stop);
     cudaDeviceSynchronize();
-	cudaEventSynchronize(stop);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	cudaGraphicsUnmapResources(1, &vbo_res);
 	{
 		cudaError_t err = cudaGetLastError();
-		if (err != cudaSuccess) 
+		if (err != cudaSuccess)
 			printf("Error: %d: %s\n", __LINE__, cudaGetErrorString(err));
 	}
 	float milliseconds = 0;
@@ -140,6 +139,8 @@ int cuda_genimage(t_display *disp)
 extern "C"
 void cuda_fini(t_driver *driver)
 {
+	cudaDeviceSynchronize();
+
 	cudaDeviceReset();
 }
 
@@ -176,12 +177,6 @@ t_primitive *new_primitive(t_primitive *alloc, t_iprimitive *base);
 
 t_cuda_scene *generate_cscene(t_iscene *fn)
 {
-	t_ray_intersect_fun funs[4];	
-
-	cudaMemcpyFromSymbol(&funs[0], I(plane), sizeof(void*));
-	cudaMemcpyFromSymbol(&funs[1], I(sphere), sizeof(void*));
-	cudaMemcpyFromSymbol(&funs[2], I(cone), sizeof(void*));
-	cudaMemcpyFromSymbol(&funs[3], I(cylinder), sizeof(void*));
 	int i;
 	i = 0;
 

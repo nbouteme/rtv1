@@ -16,8 +16,6 @@ void print_ray(const t_cray &ray)
 		   ray.dir.v[0], ray.dir.v[1], ray.dir.v[2]);
 }
 
-__device__ int dbg;
-
 __device__
 int solve_second(float a, float b, float c, float &x0, float &x1)
 {
@@ -71,7 +69,7 @@ t_cray transform_ray(const t_cmat4 &transf, const t_cmat3 &norm, const t_cray &i
 }
 
 __device__
-int intersect(t_primitive &self, const t_cray &from, t_hit_info &info)
+int intersect(t_primitive &self, const t_cray &from, t_hit_info &info, float maxd)
 {
 	t_cray from2;
 	int res;
@@ -80,16 +78,16 @@ int intersect(t_primitive &self, const t_cray &from, t_hit_info &info)
 	switch(self.type)
 	{
 	case 0:
-		res = plane_cuda_ray_intersect(from2, info);
+		res = plane_cuda_ray_intersect(from2, info, maxd);
 		break;
 	case 1:
-		res = sphere_cuda_ray_intersect(from2, info);
+		res = sphere_cuda_ray_intersect(from2, info, maxd);
 		break;
 	case 2:
-		res = cylinder_cuda_ray_intersect(from2, info);
+		res = cylinder_cuda_ray_intersect(from2, info, maxd);
 		break;
 	case 3:
-		res = cone_cuda_ray_intersect(from2, info);
+		res = cone_cuda_ray_intersect(from2, info, maxd);
 		break;
 	default:
 		res = 0;
@@ -110,27 +108,19 @@ int cintersect_with_smth(t_cray &from, t_cuda_scene &scene, t_hit_info &hit, flo
 {
 	int i;
 	bool hit_found;
-	t_hit_info back;
 
 	hit_found = false;
 	i = 0;
 	while (i < scene.n_primitives)
 	{
-		back = hit;
-		if (intersect(scene.primitives[i], from, hit))
+		if (intersect(scene.primitives[i], from, hit, maxdist))
 		{
-			if (maxdist > hit.dist)
-			{
-				maxdist = hit.dist;
-				hit_found = true;
-				hit_primitive = &scene.primitives[i];
-			}
-			else
-				hit = back;
+			maxdist = hit.dist;
+			hit_found = true;
+			hit_primitive = &scene.primitives[i];
 		}
 		++i;
 	}
-	__syncthreads();
 	return (hit_found);
 }
 
@@ -214,14 +204,12 @@ t_cvec3 cuda_color_from_ray(t_cuda_scene &scene, t_cray &from)
 		prim[1] = prim[0];
 		t_cray shadow_ray = cgen_ray(hit[1].point + (hit[1].normal * 0.001f), scene.spots[i].pos);
 		t_cvec3 light_dir = scene.spots[i].pos - hit[1].point;
-		if (cintersect_with_smth(shadow_ray, scene, hit[1], light_dir.norme(), prim[1]))
-			out += prim[0]->mat.ambiant;
-		else
-			out += cuda_color_from_material<depth>(scene, from, *prim[0],
-											hit[1], shadow_ray, light_dir);
+		float cond = cintersect_with_smth(shadow_ray, scene, hit[1], light_dir.norme(), prim[1]);
+		out += (prim[0]->mat.ambiant * cond) +
+			(cuda_color_from_material<depth>(scene, from, *prim[0], hit[1], shadow_ray, light_dir) *
+			 (1.0f - cond));
 		++i;
 	}
-	__syncthreads();
 	return out * (__fdividef(1.0f, scene.n_spots));
 }
 
@@ -251,19 +239,21 @@ __device__
 int solve_second(float a, float b, float c, float &x0, float &x1);
 
 __device__
-int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist)
 {
 	t_cvec3 norm = {{0.0f, 0.0f, 1.0f}};
 	float t;
-	if (ray.dir.z == 0.0f || ray.pos.z == 0)
-		return (false);
-	if ((ray.pos.z > 0 && ray.dir.z > 0)
+	if (ray.dir.z == 0.0f || ray.pos.z == 0 ||
+		(ray.pos.z > 0 && ray.dir.z > 0)
 		|| (ray.pos.z < 0 && ray.dir.z < 0))
 		return (false);
 	if (ray.pos.z < 0)
 		norm.z = -1;
+	//norm.z *= ray.pos.z < 0 * 2 - 1;
 	t = __fdividef(ray.pos.z, ray.dir.z);
 	t = t > 0 ? t : -t;
+	if (t > mdist)
+		return 0;
 	hit.point = ray.pos + (ray.dir * t);
 	hit.normal = norm;
 	hit.dist = t;
@@ -271,30 +261,25 @@ int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 }
 
 __device__
-int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist)
 {
 	t_cvec3 l;
 	float b;
 	float c;
-	float tmp;
 
 	l = ray.pos;
 	b = 2 * ray.dir.dot(l);
 	c = l.dot(l) - 1;
 	if (!solve_second(ray.dir.dot(ray.dir), b, c, b, c))
 		return (0);
-	if (b > c)
-	{
-		tmp = b;
-		b = c;
-		c = tmp;
-	}
 	if (b < 0)
 	{
 		if (c < 0)
 			return (0);
 		b = c;
 	}
+	if (b > mdist)
+		return 0;
 	hit.point = ray.pos + (ray.dir * b);
 	hit.normal = hit.point;
 	hit.dist = b;
@@ -302,7 +287,7 @@ int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 }
 
 __device__
-int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist)
 {
 	float a, b, c;//, tmp;
 	a = (ray.dir.x * ray.dir.x) + (ray.dir.y * ray.dir.y);
@@ -311,18 +296,14 @@ int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 
 	if (!solve_second(a, b, c, b, c))
 		return (0);
-	if (b > c)
-	{
-		a = b;
-		b = c;
-		c = a;
-	}
 	if (b < 0)
 	{
 		if (c < 0)
 			return (0);
 		b = c;
 	}
+	if (b > mdist)
+		return 0;
 	hit.point = ray.pos + (ray.dir * b);
 	hit.normal = hit.point;
 	hit.normal.z = 0;
@@ -332,7 +313,7 @@ int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 }
 
 __device__
-int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
+int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist)
 {
 	float a, b, c;
 	a = (ray.dir.x * ray.dir.x) + (ray.dir.y * ray.dir.y) - (ray.dir.z * ray.dir.z);
@@ -340,18 +321,14 @@ int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 	c = (ray.pos.x * ray.pos.x) + (ray.pos.y * ray.pos.y) - (ray.pos.z * ray.pos.z);
 	if (!solve_second(a, b, c, b, c))
 		return (0);
-	if (b > c)
-	{
-		a = b;
-		b = c;
-		c = a;
-	}
 	if (b <= 0.001f)
 	{
 		if (c <= 0.001f)
 			return (0);
 		b = c;
 	}
+	if (b > mdist)
+		return 0;
 	hit.point = ray.pos + (ray.dir * b);
 	a = rsqrtf(2.0f);
 	/* TODO: Compute the correct normal  */
@@ -362,12 +339,12 @@ int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit)
 	hit.dist = b;
 	return (1);
 }
-
+/*
 __device__ void *I(plane) = (void*)F(plane);
 __device__ void *I(sphere) = (void*)F(sphere);
 __device__ void *I(cylinder) = (void*)F(cylinder);
 __device__ void *I(cone) = (void*)F(cone);
-
+*/
 __device__ 
 float conv(float c)
 {
@@ -393,6 +370,7 @@ void draw_scene(t_cuda_scene &scene)
 			t_cvec3 col = cuda_color_from_ray<0>(scene, ray);
 
 			float4 gcol = make_float4(conv(col[0]), conv(col[1]), conv(col[2]), 1.0f);
+			//float4 gcol = make_float4(col[0], col[1], col[2], 1.0f);
 			surf2Dwrite(gcol, surRef, (x + i) * sizeof(float4), 719 - (y));
 		}
 }

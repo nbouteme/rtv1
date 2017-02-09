@@ -14,10 +14,10 @@ __device__ t_cvec3 cuda_color_from_material(t_cuda_scene &scene, t_cray &ray, t_
 								 t_hit_info &hit, t_cray &shadow_ray, t_cvec3 &light_dir);
 
 __device__
-int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+int cone_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist);
 __device__
-int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+int cylinder_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist);
 __device__
-int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+int sphere_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist);
 __device__
-int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit);
+int plane_cuda_ray_intersect(t_cray &ray, t_hit_info &hit, float mdist);
